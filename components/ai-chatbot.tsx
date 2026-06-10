@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { LoaderCircle, MessageCircle, Send, Sparkles, X } from "lucide-react";
+import { brand } from "@/lib/site-data";
 
 type Message = {
   role: "user" | "assistant";
@@ -13,6 +14,22 @@ const welcomeMessage: Message = {
   content: "Bonjour, bienvenue chez JOS Travel. Dites-moi votre destination, vos dates ou votre besoin, et je vous guide."
 };
 
+const handoffKeywords = [
+  "whatsapp",
+  "conseiller",
+  "réserver",
+  "réservation",
+  "devis",
+  "appel",
+  "contacter",
+  "visa",
+  "billet",
+  "prix",
+  "disponibilité",
+  "documents",
+  "pas disponible"
+];
+
 export function AiChatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
@@ -20,6 +37,13 @@ export function AiChatbot() {
   const [loading, setLoading] = useState(false);
   const messagesViewportRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
+  const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
+  const latestAssistantMessage = [...messages].reverse().find((message) => message.role === "assistant");
+  const showWhatsAppHandoff =
+    !loading &&
+    Boolean(lastUserMessage) &&
+    Boolean(latestAssistantMessage) &&
+    shouldSuggestWhatsAppHandoff(latestAssistantMessage?.content ?? "");
 
   useEffect(() => {
     if (!open) {
@@ -131,6 +155,20 @@ export function AiChatbot() {
                   </p>
                 </div>
               ) : null}
+
+              {showWhatsAppHandoff ? (
+                <div className="flex justify-start">
+                  <a
+                    href={buildWhatsAppHandoffUrl(lastUserMessage?.content)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex max-w-[86%] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-cyan-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-500/25 transition hover:-translate-y-0.5 hover:shadow-xl"
+                  >
+                    <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
+                    Poursuivre avec un conseiller sur WhatsApp
+                  </a>
+                </div>
+              ) : null}
               <div ref={latestMessageRef} aria-hidden="true" />
             </div>
 
@@ -154,4 +192,21 @@ export function AiChatbot() {
       ) : null}
     </>
   );
+}
+
+function buildWhatsAppHandoffUrl(lastNeed?: string) {
+  const text = [
+    "Bonjour JOS Travel, je souhaite poursuivre cet échange sur WhatsApp avec un conseiller.",
+    lastNeed ? `Mon besoin : ${lastNeed.slice(0, 240)}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`;
+}
+
+function shouldSuggestWhatsAppHandoff(content: string) {
+  const normalized = content.toLowerCase();
+
+  return handoffKeywords.some((keyword) => normalized.includes(keyword));
 }
