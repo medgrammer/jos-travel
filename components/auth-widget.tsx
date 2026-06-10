@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { LoaderCircle, LogIn, LogOut, ShieldCheck, UserPlus, UserRound, X } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
@@ -29,6 +30,7 @@ export function AuthWidget() {
   const [signup, setSignup] = useState(initialSignup);
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const refreshProfile = useCallback(async () => {
     if (!supabase) {
@@ -75,16 +77,38 @@ export function AuthWidget() {
   }, [refreshProfile, supabase]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!open) {
       return;
     }
 
     const previousOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
     document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.documentElement.style.overflow = previousOverflow;
+      document.body.style.overflow = previousBodyOverflow;
     };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
   }, [open]);
 
   async function handleSignin(event: React.FormEvent<HTMLFormElement>) {
@@ -200,21 +224,26 @@ export function AuthWidget() {
         )}
       </div>
 
-      {open ? (
-        <div className="fixed inset-0 z-[80] grid place-items-center overflow-hidden bg-ocean-950/35 p-3 backdrop-blur-sm md:p-6">
-          <div className="relative flex max-h-[calc(100svh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[8px] border border-cyan-100 bg-white shadow-lift md:max-h-[calc(100svh-3rem)]">
+      {mounted && open ? createPortal(
+        <div className="fixed inset-0 z-[1000] flex min-h-dvh items-center justify-center overflow-y-auto bg-ocean-950/45 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-dialog-title"
+            className="relative my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-2xl flex-col overflow-hidden rounded-[8px] border border-cyan-100 bg-white shadow-lift"
+          >
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Fermer"
-              className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-cyan-50 text-ocean-950"
+              className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-cyan-50 text-ocean-950 transition hover:bg-cyan-100"
             >
               <X aria-hidden="true" className="h-5 w-5" />
             </button>
 
             <div className="min-h-0 overflow-y-auto p-5 md:p-6">
               <p className="text-sm font-semibold uppercase text-sun-600">Espace client</p>
-              <h2 className="mt-2 pr-12 font-display text-3xl font-semibold text-ocean-950">
+              <h2 id="auth-dialog-title" className="mt-2 pr-12 font-display text-3xl font-semibold text-ocean-950">
                 Connexion ou création de compte
               </h2>
               <div className="mt-5 grid grid-cols-2 rounded-full border border-cyan-100 bg-cyan-50 p-1">
@@ -280,7 +309,8 @@ export function AuthWidget() {
               ) : null}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </>
   );
