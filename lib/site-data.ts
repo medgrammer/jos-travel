@@ -24,7 +24,7 @@ export const brand = {
   legal: "Agence de tourisme agréée de 3e catégorie",
   email: "jostravel2026@gmail.com",
   address: "Damas sis dépôt de bois",
-  phones: ["+237 222 316 237", "+237 671 057 243"],
+  phones: ["+237 222 316 237", "+237 671 057 243", "+237 674 32 35 65", "+237 641 62 07 66"],
   whatsapp: "237671057243"
 };
 
@@ -235,7 +235,7 @@ export const faqs = [
   {
     question: "Comment contacter rapidement l'agence ?",
     answer:
-      "Le plus direct est WhatsApp ou téléphone au +237 671 057 243. Vous pouvez aussi écrire à jostravel2026@gmail.com."
+      "Le plus direct est WhatsApp ou téléphone via les numéros affichés dans la section contact. Vous pouvez aussi écrire à jostravel2026@gmail.com."
   }
 ];
 

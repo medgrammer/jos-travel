@@ -90,6 +90,10 @@ function whatsappUrl(message = "Bonjour JOS Travel, je souhaite réserver ou obt
   return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`;
 }
 
+function phoneHref(phone: string) {
+  return `tel:${phone.replace(/\s+/g, "")}`;
+}
+
 function SectionTitle({
   eyebrow,
   title,
@@ -705,8 +709,15 @@ function Contact() {
           />
 
           <div className="mt-9 grid gap-4 sm:grid-cols-2">
-            <ContactCard icon={Phone} label={brand.phones[0]} href={`tel:${brand.phones[0].replaceAll(" ", "")}`} />
-            <ContactCard icon={MessageCircle} label={brand.phones[1]} href={whatsappUrl()} accent="green" />
+            {brand.phones.map((phone, index) => (
+              <ContactCard
+                key={phone}
+                icon={index === 1 ? MessageCircle : Phone}
+                label={phone}
+                href={index === 1 ? whatsappUrl() : phoneHref(phone)}
+                accent={index === 1 ? "green" : "blue"}
+              />
+            ))}
             <ContactCard icon={Mail} label={brand.email} href={`mailto:${brand.email}`} />
             <ContactCard icon={MapPin} label={brand.address} href="https://maps.google.com/?q=Damas%20sis%20d%C3%A9p%C3%B4t%20de%20bois%20Yaound%C3%A9%20Cameroun" />
           </div>
