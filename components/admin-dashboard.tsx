@@ -87,7 +87,7 @@ export function AdminDashboard() {
               Retour au site
             </Link>
             <p className="mt-6 text-sm font-semibold uppercase text-sun-600">Gestion interne</p>
-            <h1 className="mt-2 font-display text-4xl font-semibold md:text-6xl">Plateforme JOS Travel</h1>
+            <h1 className="mt-2 font-display text-4xl font-semibold md:text-6xl">Plateforme JOS-Travel</h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
               Vue admin pour suivre les comptes clients et contrôler le crédit de l&apos;agent IA OpenAI.
             </p>

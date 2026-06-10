@@ -253,6 +253,7 @@ export function AuthWidget() {
                       <option>Vacances</option>
                       <option>Billet d&apos;avion</option>
                       <option>Assistance visa</option>
+                      <option>Bourses d&apos;études</option>
                       <option>Voyage d&apos;affaires</option>
                       <option>Excursion Cameroun</option>
                       <option>Événement / séminaire</option>

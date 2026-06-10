@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "La discussion JOS Travel est prête, mais la configuration serveur n'est pas encore terminée."
+          "La discussion JOS-Travel est prête, mais la configuration serveur n'est pas encore terminée."
       },
       { status: 503 }
     );
@@ -59,10 +59,10 @@ export async function POST(request: Request) {
         creditState.configured && creditState.remainingCredits > 0 ? creditState.remainingCredits - 1 : null
     });
   } catch (error) {
-    console.error("JOS Travel chat failed", formatOpenAIError(error));
+    console.error("JOS-Travel chat failed", formatOpenAIError(error));
 
     return NextResponse.json(
-      { error: "JOS Travel n'a pas pu répondre pour le moment. Merci de réessayer." },
+      { error: "JOS-Travel n'a pas pu répondre pour le moment. Merci de réessayer." },
       { status: 500 }
     );
   }
@@ -96,7 +96,7 @@ async function createTravelResponse(client: OpenAI, messages: ChatMessage[]): Pr
       return await client.responses.create(buildResponseRequest(model, messages));
     } catch (error) {
       lastError = error;
-      console.error("JOS Travel OpenAI model attempt failed", {
+      console.error("JOS-Travel OpenAI model attempt failed", {
         model,
         error: formatOpenAIError(error)
       });
@@ -176,6 +176,6 @@ async function consumeCredit(admin: ReturnType<typeof createAdminClient>, curren
 
   await admin.from("ai_credit_events").insert({
     amount: -1,
-    reason: "Conversation JOS Travel"
+    reason: "Conversation JOS-Travel"
   });
 }

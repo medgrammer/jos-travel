@@ -86,7 +86,7 @@ function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function whatsappUrl(message = "Bonjour JOS Travel, je souhaite réserver ou obtenir des informations pour un voyage.") {
+function whatsappUrl(message = "Bonjour JOS-Travel, je souhaite réserver ou obtenir des informations pour un voyage.") {
   return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(message)}`;
 }
 
@@ -161,7 +161,7 @@ function Header() {
           <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-lg ring-1 ring-white/50">
             <Image
               src="/media/jos-logo.jpeg"
-              alt="Logo JOS Travel"
+              alt="Logo JOS-Travel"
               width={120}
               height={120}
               priority
@@ -283,7 +283,7 @@ function Hero() {
             transition={{ delay: 0.1 }}
             className="text-balance text-5xl font-black leading-[0.95] tracking-tight text-white md:text-7xl lg:text-8xl"
           >
-            JOS Travel
+            JOS-Travel
           </motion.h1>
 
           <motion.p
@@ -359,7 +359,7 @@ function About() {
           <div className="relative h-[560px] overflow-hidden rounded-[3rem] shadow-2xl">
             <Image
               src="/media/jos-travel-02.jpeg"
-              alt="Affiche officielle JOS Travel"
+              alt="Affiche officielle JOS-Travel"
               fill
               sizes="(min-width: 1024px) 48vw, 100vw"
               className="h-full w-full object-cover"
@@ -380,7 +380,7 @@ function About() {
           <SectionTitle
             eyebrow="Qui sommes-nous ?"
             title="L'art de créer des voyages qui vous ressemblent."
-            copy="Chez JOS Travel, nous ne planifions pas seulement des trajets : nous composons des expériences. Notre équipe accompagne les particuliers et les entreprises avec une expertise locale et internationale, des conseils personnalisés et une assistance continue."
+            copy="Chez JOS-Travel, nous ne planifions pas seulement des trajets : nous composons des expériences. Notre équipe accompagne les particuliers et les entreprises avec une expertise locale et internationale, des conseils personnalisés et une assistance continue."
           />
 
           <div className="mt-9 grid gap-4 sm:grid-cols-3">
@@ -434,13 +434,34 @@ function Services() {
                 viewport={{ once: true, margin: "-80px" }}
                 transition={{ delay: index * 0.04, duration: 0.55 }}
                 whileHover={{ y: -10, scale: 1.02 }}
-                className="group rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-xl shadow-sky-900/5 backdrop-blur-xl transition hover:shadow-cyan-500/20"
+                className={cx(
+                  "group rounded-[2rem] border border-white/70 bg-white/75 p-6 shadow-xl shadow-sky-900/5 backdrop-blur-xl transition hover:shadow-cyan-500/20",
+                  service.featured && "sm:col-span-2 lg:col-span-2"
+                )}
               >
-                <div className="mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-cyan-100 to-sky-100 text-sky-700 transition group-hover:scale-110">
-                  <Icon aria-hidden="true" className="h-7 w-7" />
+                <div className={cx("grid gap-5", service.image && "md:grid-cols-[0.82fr_1fr] md:items-center")}>
+                  {service.image ? (
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-cyan-50 shadow-lg">
+                      <Image src={service.image} alt={`Illustration ${service.title}`} fill className="object-cover" sizes="(min-width: 1024px) 260px, 90vw" />
+                    </div>
+                  ) : null}
+                  <div>
+                    <div className="mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-cyan-100 to-sky-100 text-sky-700 transition group-hover:scale-110">
+                      <Icon aria-hidden="true" className="h-7 w-7" />
+                    </div>
+                    <h3 className="text-lg font-black text-sky-950">{service.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-slate-600">{service.copy}</p>
+                    {service.href ? (
+                      <a
+                        href={service.href}
+                        className="mt-5 inline-flex items-center gap-2 rounded-full bg-sky-950 px-5 py-3 text-sm font-black text-white transition hover:bg-sky-800"
+                      >
+                        {service.cta ?? "En savoir plus"}
+                        <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
-                <h3 className="text-lg font-black text-sky-950">{service.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{service.copy}</p>
               </motion.article>
             );
           })}
@@ -679,7 +700,7 @@ function Contact() {
 
   const href = useMemo(() => {
     const text = [
-      "Bonjour JOS Travel, je souhaite une offre personnalisée.",
+      "Bonjour JOS-Travel, je souhaite une offre personnalisée.",
       form.name ? `Nom: ${form.name}` : "",
       form.phone ? `Téléphone: ${form.phone}` : "",
       form.destination ? `Destination: ${form.destination}` : "",
@@ -704,7 +725,7 @@ function Contact() {
         <div>
           <SectionTitle
             eyebrow="Contact"
-            title="Votre aventure commence avec JOS Travel."
+            title="Votre aventure commence avec JOS-Travel."
             copy="Envoyez votre besoin, votre destination ou votre idée de séjour. L'équipe vous accompagne pour construire une expérience claire, fiable et mémorable."
           />
 
@@ -724,7 +745,7 @@ function Contact() {
 
           <div className="mt-6 overflow-hidden rounded-[2rem] shadow-2xl">
             <iframe
-              title="Carte JOS Travel"
+              title="Carte JOS-Travel"
               className="h-72 w-full border-0 grayscale-[20%]"
               loading="lazy"
               src="https://www.google.com/maps?q=Damas%20sis%20d%C3%A9p%C3%B4t%20de%20bois%20Yaound%C3%A9%20Cameroun&output=embed"
@@ -765,6 +786,7 @@ function Contact() {
               <option>Voyage personnalisé</option>
               <option>Billet d&apos;avion</option>
               <option>Assistance visa</option>
+              <option>Bourses d&apos;études</option>
               <option>Excursion</option>
               <option>Séminaire / événement</option>
             </select>
@@ -842,7 +864,7 @@ function Footer() {
             </a>
           ))}
         </div>
-        <div className="text-sm text-sky-200">© 2026 JOS Travel. Tous droits réservés.</div>
+        <div className="text-sm text-sky-200">© 2026 {brand.name}. Tous droits réservés.</div>
       </div>
     </footer>
   );

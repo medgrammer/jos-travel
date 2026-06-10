@@ -11,7 +11,7 @@ type Message = {
 
 const welcomeMessage: Message = {
   role: "assistant",
-  content: "Bonjour, bienvenue chez JOS Travel. Dites-moi votre destination, vos dates ou votre besoin, et je vous guide."
+  content: `Bonjour, bienvenue chez ${brand.name}. Dites-moi votre destination, vos dates ou votre besoin, et je vous guide.`
 };
 
 const handoffKeywords = [
@@ -27,6 +27,13 @@ const handoffKeywords = [
   "prix",
   "disponibilité",
   "documents",
+  "bourse",
+  "bourses",
+  "études",
+  "chine",
+  "dossier",
+  "candidature",
+  "inscription",
   "pas disponible"
 ];
 
@@ -90,7 +97,7 @@ export function AiChatbot() {
     const answer =
       response?.ok && payload?.answer
         ? payload.answer
-        : payload?.error ?? "JOS Travel n'est pas disponible pour le moment.";
+        : payload?.error ?? `${brand.name} n'est pas disponible pour le moment.`;
 
     setMessages((state) => [...state, { role: "assistant", content: answer }]);
     setLoading(false);
@@ -101,7 +108,7 @@ export function AiChatbot() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Ouvrir la discussion JOS Travel"
+        aria-label={`Ouvrir la discussion ${brand.name}`}
         className="fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-green-400 to-cyan-500 text-white shadow-2xl shadow-green-500/40 transition hover:scale-110"
       >
         <MessageCircle aria-hidden="true" className="h-8 w-8" />
@@ -116,7 +123,7 @@ export function AiChatbot() {
                   <Sparkles aria-hidden="true" className="h-5 w-5" />
                 </span>
                 <div>
-                  <h2 className="font-bold text-ocean-950">JOS Travel</h2>
+                  <h2 className="font-bold text-ocean-950">{brand.name}</h2>
                 </div>
               </div>
               <button
@@ -151,7 +158,7 @@ export function AiChatbot() {
                 <div className="flex justify-start">
                   <p className="inline-flex items-center gap-2 rounded-[8px] border border-cyan-100 bg-white px-4 py-3 text-sm font-semibold text-slate-600 shadow-sm">
                     <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
-                    JOS Travel rédige une réponse...
+                    {brand.name} rédige une réponse...
                   </p>
                 </div>
               ) : null}
@@ -165,7 +172,7 @@ export function AiChatbot() {
                     className="inline-flex max-w-[86%] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-cyan-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-500/25 transition hover:-translate-y-0.5 hover:shadow-xl"
                   >
                     <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
-                    Poursuivre avec un conseiller sur WhatsApp
+                    Discuter avec un conseiller sur WhatsApp
                   </a>
                 </div>
               ) : null}
@@ -196,7 +203,7 @@ export function AiChatbot() {
 
 function buildWhatsAppHandoffUrl(lastNeed?: string) {
   const text = [
-    "Bonjour JOS Travel, je souhaite poursuivre cet échange sur WhatsApp avec un conseiller.",
+    `Bonjour ${brand.name}, je souhaite poursuivre cet échange sur WhatsApp avec un conseiller.`,
     lastNeed ? `Mon besoin : ${lastNeed.slice(0, 240)}` : ""
   ]
     .filter(Boolean)

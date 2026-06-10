@@ -6,6 +6,7 @@ import {
   Compass,
   FileCheck2,
   Globe2,
+  GraduationCap,
   Headphones,
   HeartHandshake,
   Home,
@@ -17,9 +18,20 @@ import {
   UsersRound,
   WalletCards
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
+export type ServiceItem = {
+  title: string;
+  copy: string;
+  icon: LucideIcon;
+  href?: string;
+  image?: string;
+  cta?: string;
+  featured?: boolean;
+};
 
 export const brand = {
-  name: "JOS Travel",
+  name: "JOS-Travel",
   baseline: "Où chaque voyage devient une histoire inoubliable.",
   legal: "Agence de tourisme agréée de 3e catégorie",
   email: "jostravel2026@gmail.com",
@@ -33,9 +45,45 @@ export const media = Array.from({ length: 65 }, (_, index) => {
   return {
     id,
     src: `/media/jos-travel-${String(id).padStart(2, "0")}.jpeg`,
-    alt: `Univers visuel JOS Travel ${id}`
+    alt: `Univers visuel JOS-Travel ${id}`
   };
 });
+
+export const scholarshipFlyers = [
+  {
+    src: "/media/jos-travel-bourses-chine-offre.jpeg",
+    alt: "Flyer JOS-Travel pour les bourses complètes en Chine",
+    title: "Étudiez en Chine avec bourse complète"
+  },
+  {
+    src: "/media/jos-travel-bourses-chine-conditions.jpeg",
+    alt: "Flyer JOS-Travel des conditions et dossiers à fournir pour les bourses en Chine",
+    title: "Conditions principales et dossiers à fournir"
+  }
+];
+
+export const scholarshipOffer = {
+  title: "Bourses d'études en Chine",
+  hero: "Étudiez en Chine avec bourse complète",
+  subtitle:
+    "Opportunités ouvertes aux étudiants avec accompagnement complet de JOS-Travel pour la constitution et le suivi du dossier.",
+  promo: "Offre promotionnelle jusqu'au 10 juin",
+  fee: "Frais d'ouverture du dossier : 100 000 F",
+  deadline: "Dépôt de candidature ouvert jusqu'au 10 juin",
+  support: "Accompagnement complet pour la procédure",
+  contacts: ["+237 671 05 72 43", "+237 641 62 07 66"],
+  email: "jostravel2026@gmail.com",
+  address: "Sis Damas dépôt de bois",
+  levels: ["Diploma / durée 3 ans", "Master", "PhD"],
+  coverage: ["Scolarité", "Hébergement", "Assurance médicale", "Billet d'avion inclus"],
+  conditions: [
+    "Être titulaire du diplôme requis",
+    "Avoir un passeport valide",
+    "Présenter un dossier académique acceptable",
+    "Avoir la motivation pour étudier en Chine"
+  ],
+  documents: ["Diplômes et relevés", "Photos d'identité", "CV", "Passeport"]
+};
 
 export const navItems = [
   { label: "Services", href: "#services" },
@@ -67,7 +115,17 @@ export const trustMarkers = [
   }
 ];
 
-export const services = [
+export const services: ServiceItem[] = [
+  {
+    title: "Bourses d'études",
+    copy:
+      "Accompagnement pour les opportunités d'études en Chine avec bourse complète, constitution du dossier et suivi de la procédure.",
+    icon: GraduationCap,
+    href: "/bourses-etudes",
+    image: scholarshipFlyers[0].src,
+    cta: "Voir le programme",
+    featured: true
+  },
   {
     title: "Tourisme",
     copy: "Circuits culturels, aventures nature, écotourisme et escapades locales au Cameroun.",
@@ -126,7 +184,7 @@ export const destinationGroups = [
     label: "Cameroun",
     title: "Explorer le Cameroun avec des experts locaux",
     copy:
-      "Forêts luxuriantes, chutes spectaculaires, villes vivantes, plages de Kribi et patrimoines culturels : JOS Travel construit des circuits authentiques, encadrés et confortables.",
+      "Forêts luxuriantes, chutes spectaculaires, villes vivantes, plages de Kribi et patrimoines culturels : JOS-Travel construit des circuits authentiques, encadrés et confortables.",
     cta: "Créer mon circuit local",
     images: [44, 38, 50, 36, 26, 7].map((id) => media[id - 1]),
     stats: ["Guides locaux", "Excursions", "Nature & culture"]
@@ -204,7 +262,7 @@ export const testimonials = [
   },
   {
     quote:
-      "Pour notre séminaire, JOS Travel a trouvé les bons lieux, les bons trajets et un accompagnement constant. Très professionnel.",
+      "Pour notre séminaire, JOS-Travel a trouvé les bons lieux, les bons trajets et un accompagnement constant. Très professionnel.",
     author: "Arnaud T.",
     role: "Déplacement d'entreprise"
   },
@@ -218,7 +276,7 @@ export const testimonials = [
 
 export const faqs = [
   {
-    question: "JOS Travel accompagne-t-elle les voyages au Cameroun et à l'international ?",
+    question: "JOS-Travel accompagne-t-elle les voyages au Cameroun et à l'international ?",
     answer:
       "Oui. L'agence organise des circuits locaux, des séjours de vacances, des voyages d'affaires et des départs internationaux avec assistance sur les billets, hôtels et formalités."
   },

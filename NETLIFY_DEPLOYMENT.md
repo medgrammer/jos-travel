@@ -1,13 +1,13 @@
 # Déploiement Netlify
 
-Le projet JOS Travel est prêt pour Netlify avec Next.js, routes API, Supabase, espace admin et discussion JOS Travel.
+Le projet JOS-Travel est prêt pour Netlify avec Next.js, routes API, Supabase, espace admin et discussion JOS-Travel.
 
 ## Méthode recommandée
 
 Netlify recommande de pousser le projet sur un fournisseur Git puis de connecter le dépôt depuis le dashboard Netlify.
 
 1. Créer un dépôt GitHub.
-2. Envoyer le projet JOS Travel dans ce dépôt.
+2. Envoyer le projet JOS-Travel dans ce dépôt.
 3. Dans Netlify : Add new project > Import an existing project.
 4. Choisir le dépôt.
 5. Utiliser les réglages suivants :

@@ -1,6 +1,6 @@
 # Déploiement GoDaddy direct
 
-Ce site JOS Travel est une application Next.js avec routes serveur, Supabase et discussion JOS Travel via OpenAI. Pour garder toutes les fonctionnalités, GoDaddy doit exécuter Node.js.
+Ce site JOS-Travel est une application Next.js avec routes serveur, Supabase et discussion JOS-Travel via OpenAI. Pour garder toutes les fonctionnalités, GoDaddy doit exécuter Node.js.
 
 ## Option compatible
 

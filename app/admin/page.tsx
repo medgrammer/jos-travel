@@ -24,7 +24,7 @@ export default async function AdminPage() {
           </span>
           <h1 className="mt-5 font-display text-3xl font-semibold">Accès admin requis</h1>
           <p className="mt-4 text-sm leading-7 text-slate-600">
-            Connectez-vous avec un compte administrateur JOS Travel pour gérer les utilisateurs et le crédit de l&apos;agent IA.
+            Connectez-vous avec un compte administrateur JOS-Travel pour gérer les utilisateurs et le crédit de l&apos;agent IA.
           </p>
           <Link
             href="/"
