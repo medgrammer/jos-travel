@@ -19,7 +19,11 @@ export async function GET() {
     usersResult,
     settingsResult,
     recentUsersResult,
-    eventsResult
+    eventsResult,
+    visitsResult,
+    clicksResult,
+    whatsappClicksResult,
+    cloudSubscriptionResult
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase.from("ai_settings").select("*").eq("id", true).maybeSingle(),
@@ -32,16 +36,35 @@ export async function GET() {
       .from("ai_credit_events")
       .select("id,amount,reason,created_at")
       .order("created_at", { ascending: false })
-      .limit(8)
+      .limit(8),
+    supabase.from("site_events").select("id", { count: "exact", head: true }).eq("event_type", "visit"),
+    supabase.from("site_events").select("id", { count: "exact", head: true }).eq("event_type", "click"),
+    supabase.from("site_events").select("id", { count: "exact", head: true }).eq("event_type", "whatsapp_click"),
+    supabase.from("cloud_subscription").select("*").eq("id", true).maybeSingle()
   ]);
 
-  if (usersResult.error || settingsResult.error || recentUsersResult.error || eventsResult.error) {
+  if (
+    usersResult.error ||
+    settingsResult.error ||
+    recentUsersResult.error ||
+    eventsResult.error ||
+    visitsResult.error ||
+    clicksResult.error ||
+    whatsappClicksResult.error ||
+    cloudSubscriptionResult.error
+  ) {
     return NextResponse.json({ error: "Impossible de charger les données admin." }, { status: 500 });
   }
 
   return NextResponse.json({
     profile: adminUser.profile,
     userCount: usersResult.count ?? 0,
+    analytics: {
+      visits: visitsResult.count ?? 0,
+      clicks: clicksResult.count ?? 0,
+      whatsappClicks: whatsappClicksResult.count ?? 0
+    },
+    cloudSubscription: cloudSubscriptionResult.data,
     aiSettings: settingsResult.data,
     recentUsers: recentUsersResult.data ?? [],
     creditEvents: eventsResult.data ?? []

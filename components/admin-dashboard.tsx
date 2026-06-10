@@ -2,10 +2,36 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { Bot, CreditCard, LoaderCircle, RefreshCw, ShieldCheck, UsersRound } from "lucide-react";
+import {
+  Bot,
+  CalendarClock,
+  Cloud,
+  CreditCard,
+  Eye,
+  LoaderCircle,
+  MessageCircle,
+  MousePointerClick,
+  RefreshCw,
+  ShieldCheck,
+  UsersRound,
+  type LucideIcon
+} from "lucide-react";
 
 type AdminStats = {
   userCount: number;
+  analytics: {
+    visits: number;
+    clicks: number;
+    whatsappClicks: number;
+  };
+  cloudSubscription: {
+    provider: string | null;
+    plan_name: string | null;
+    status: string;
+    expires_at: string | null;
+    notes: string | null;
+    updated_at: string;
+  } | null;
   aiSettings: {
     monthly_credits: number;
     remaining_credits: number;
@@ -89,7 +115,7 @@ export function AdminDashboard() {
             <p className="mt-6 text-sm font-semibold uppercase text-sun-600">Gestion interne</p>
             <h1 className="mt-2 font-display text-4xl font-semibold md:text-6xl">Plateforme JOS-Travel</h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
-              Vue admin pour suivre les comptes clients et contrôler le crédit de l&apos;agent IA OpenAI.
+              Vue admin pour suivre les comptes clients, les visites, les clics et le crédit de l&apos;agent IA OpenAI.
             </p>
           </div>
           <button
@@ -115,10 +141,40 @@ export function AdminDashboard() {
           </div>
         ) : stats ? (
           <>
-            <div className="mt-10 grid gap-4 md:grid-cols-3">
+            <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-6">
               <Metric icon={UsersRound} label="Utilisateurs" value={String(stats.userCount)} />
+              <Metric icon={Eye} label="Visites site" value={String(stats.analytics.visits)} />
+              <Metric icon={MousePointerClick} label="Clics généraux" value={String(stats.analytics.clicks)} />
+              <Metric icon={MessageCircle} label="Clics WhatsApp" value={String(stats.analytics.whatsappClicks)} />
               <Metric icon={Bot} label="Crédits IA restants" value={String(stats.aiSettings?.remaining_credits ?? 0)} />
               <Metric icon={ShieldCheck} label="Rôle actif" value="Admin" />
+            </div>
+
+            <div className="mt-8 rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-cyan-50 text-ocean-700">
+                    <Cloud aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="font-bold text-ocean-950">Abonnement cloud</h2>
+                    <p className="text-sm text-slate-500">
+                      Fiche prête à renseigner dans Supabase pour suivre l&apos;hébergement et son expiration.
+                    </p>
+                  </div>
+                </div>
+                <div className="inline-flex items-center gap-3 rounded-full bg-cyan-50 px-4 py-2 text-sm font-bold text-ocean-800">
+                  <CalendarClock aria-hidden="true" className="h-4 w-4" />
+                  Expiration : {formatDate(stats.cloudSubscription?.expires_at)}
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-4">
+                <SubscriptionField label="Statut" value={stats.cloudSubscription?.status} />
+                <SubscriptionField label="Fournisseur" value={stats.cloudSubscription?.provider} />
+                <SubscriptionField label="Plan" value={stats.cloudSubscription?.plan_name} />
+                <SubscriptionField label="Dernière mise à jour" value={formatDate(stats.cloudSubscription?.updated_at)} />
+              </div>
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
@@ -213,7 +269,7 @@ export function AdminDashboard() {
   );
 }
 
-function Metric({ icon: Icon, label, value }: { icon: typeof UsersRound; label: string; value: string }) {
+function Metric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
     <div className="rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
       <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-cyan-50 text-ocean-700">
@@ -223,4 +279,25 @@ function Metric({ icon: Icon, label, value }: { icon: typeof UsersRound; label: 
       <p className="mt-1 text-3xl font-bold text-ocean-950">{value}</p>
     </div>
   );
+}
+
+function SubscriptionField({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="rounded-[8px] border border-cyan-100 bg-cyan-50/60 p-4">
+      <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
+      <p className="mt-2 text-sm font-semibold text-ocean-950">{value || "À renseigner"}</p>
+    </div>
+  );
+}
+
+function formatDate(value?: string | null) {
+  if (!value) {
+    return "À renseigner";
+  }
+
+  return new Intl.DateTimeFormat("fr-CM", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  }).format(new Date(value));
 }
