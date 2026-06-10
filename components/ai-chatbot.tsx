@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { LoaderCircle, MessageCircle, Send, Sparkles, X } from "lucide-react";
 
 type Message = {
@@ -18,6 +18,31 @@ export function AiChatbot() {
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const messagesViewportRef = useRef<HTMLDivElement>(null);
+  const latestMessageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const scrollToLatest = () => {
+      latestMessageRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
+
+      const viewport = messagesViewportRef.current;
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    };
+
+    const frame = window.requestAnimationFrame(scrollToLatest);
+    const timeout = window.setTimeout(scrollToLatest, 120);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timeout);
+    };
+  }, [open, messages, loading]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,7 +105,7 @@ export function AiChatbot() {
               </button>
             </header>
 
-            <div className="flex-1 space-y-3 overflow-y-auto bg-[#f8fcfd] p-4">
+            <div ref={messagesViewportRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#f8fcfd] p-4">
               {messages.map((message, index) => (
                 <div
                   key={`${message.role}-${index}`}
@@ -106,6 +131,7 @@ export function AiChatbot() {
                   </p>
                 </div>
               ) : null}
+              <div ref={latestMessageRef} aria-hidden="true" />
             </div>
 
             <form onSubmit={handleSubmit} className="flex gap-3 border-t border-cyan-100 bg-white p-3">
