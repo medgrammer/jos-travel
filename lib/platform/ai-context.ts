@@ -16,6 +16,8 @@ export function buildJosTravelContext() {
     `Signature: ${brand.baseline}`,
     `Statut: ${brand.legal}`,
     `Adresse: ${brand.address}`,
+    `Coordonnées GPS: ${brand.gps}`,
+    `Lien Google Maps: ${brand.mapsUrl}`,
     `Email: ${brand.email}`,
     `Téléphones: ${brand.phones.join(" / ")}`,
     "",

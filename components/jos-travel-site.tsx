@@ -740,7 +740,7 @@ function Contact() {
               />
             ))}
             <ContactCard icon={Mail} label={brand.email} href={`mailto:${brand.email}`} />
-            <ContactCard icon={MapPin} label={brand.address} href="https://maps.google.com/?q=Damas%20sis%20d%C3%A9p%C3%B4t%20de%20bois%20Yaound%C3%A9%20Cameroun" />
+            <ContactCard icon={MapPin} label={brand.address} href={brand.mapsUrl} />
           </div>
 
           <div className="mt-6 overflow-hidden rounded-[2rem] shadow-2xl">
@@ -748,7 +748,7 @@ function Contact() {
               title="Carte JOS-Travel"
               className="h-72 w-full border-0 grayscale-[20%]"
               loading="lazy"
-              src="https://www.google.com/maps?q=Damas%20sis%20d%C3%A9p%C3%B4t%20de%20bois%20Yaound%C3%A9%20Cameroun&output=embed"
+              src={brand.mapsEmbedUrl}
             />
           </div>
         </div>

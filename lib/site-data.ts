@@ -36,6 +36,9 @@ export const brand = {
   legal: "Agence de tourisme agréée de 3e catégorie",
   email: "jostravel2026@gmail.com",
   address: "Damas sis dépôt de bois",
+  gps: "3.817848,11.489876",
+  mapsUrl: "https://maps.google.com/?q=3.817848,11.489876",
+  mapsEmbedUrl: "https://www.google.com/maps?q=3.817848,11.489876&output=embed",
   phones: ["+237 222 316 237", "+237 671 057 243", "+237 674 32 35 65", "+237 641 62 07 66"],
   whatsapp: "237671057243"
 };
