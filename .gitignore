@@ -1,0 +1,13 @@
+.DS_Store
+node_modules
+.next
+out
+dist
+build
+deploy
+*.log
+tsconfig.tsbuildinfo
+.env
+.env.local
+supabase/.temp
+.vercel
