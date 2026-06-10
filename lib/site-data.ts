@@ -6,7 +6,6 @@ import {
   Compass,
   FileCheck2,
   Globe2,
-  GraduationCap,
   Headphones,
   HeartHandshake,
   Home,
@@ -90,6 +89,7 @@ export const scholarshipOffer = {
 
 export const navItems = [
   { label: "Services", href: "#services" },
+  { label: "Bourses", href: "#bourses" },
   { label: "Destinations", href: "#destinations" },
   { label: "Galerie", href: "#galerie" },
   { label: "Contact", href: "#contact" }
@@ -119,16 +119,6 @@ export const trustMarkers = [
 ];
 
 export const services: ServiceItem[] = [
-  {
-    title: "Bourses d'études",
-    copy:
-      "Accompagnement pour les opportunités d'études en Chine avec bourse complète, constitution du dossier et suivi de la procédure.",
-    icon: GraduationCap,
-    href: "/bourses-etudes",
-    image: scholarshipFlyers[0].src,
-    cta: "Voir le programme",
-    featured: true
-  },
   {
     title: "Tourisme",
     copy: "Circuits culturels, aventures nature, écotourisme et escapades locales au Cameroun.",

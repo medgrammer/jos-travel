@@ -26,9 +26,9 @@ export default function BoursesEtudesPage() {
       <section className="relative overflow-hidden bg-sky-950 px-5 pb-20 pt-6 text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.28),transparent_34%),linear-gradient(135deg,rgba(14,165,233,0.28),transparent_45%)]" />
         <div className="relative mx-auto max-w-7xl">
-          <Link href="/#services" className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-cyan-50 backdrop-blur transition hover:bg-white/20">
+          <Link href="/#bourses" className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-cyan-50 backdrop-blur transition hover:bg-white/20">
             <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-            Retour aux services
+            Retour aux bourses
           </Link>
 
           <div className="mt-14 grid gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">

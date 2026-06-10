@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Globe2,
+  GraduationCap,
   Mail,
   MapPin,
   Menu,
@@ -21,6 +22,7 @@ import {
   Sparkles,
   Star,
   Users,
+  WalletCards,
   X
 } from "lucide-react";
 import { AiChatbot } from "@/components/ai-chatbot";
@@ -31,6 +33,8 @@ import {
   featuredGallery,
   media,
   processSteps,
+  scholarshipFlyers,
+  scholarshipOffer,
   services,
   testimonials
 } from "@/lib/site-data";
@@ -41,6 +45,7 @@ const navItems = [
   { label: "Accueil", href: "#accueil" },
   { label: "Destinations", href: "#destinations" },
   { label: "Services", href: "#services" },
+  { label: "Bourses", href: "#bourses" },
   { label: "À propos", href: "#apropos" },
   { label: "Galerie", href: "#galerie" },
   { label: "Témoignages", href: "#temoignages" },
@@ -471,6 +476,89 @@ function Services() {
   );
 }
 
+function Scholarships() {
+  const message = [
+    "Bonjour JOS-Travel, je souhaite être accompagné pour le service Bourses d'études en Chine.",
+    "Je veux vérifier mon éligibilité, préparer mon dossier et connaître les prochaines étapes."
+  ].join("\n\n");
+
+  return (
+    <section id="bourses" className="relative overflow-hidden bg-[#F8F6F2] px-5 py-24">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(34,211,238,0.18),transparent_32%),radial-gradient(circle_at_85%_40%,rgba(251,146,60,0.14),transparent_28%)]" />
+      <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
+        <motion.div
+          initial={{ opacity: 0, x: -36 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-90px" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="grid gap-5 sm:relative sm:min-h-[610px] sm:block"
+        >
+          <div className="relative aspect-[0.7] overflow-hidden rounded-[3rem] border border-white bg-white shadow-2xl sm:absolute sm:left-0 sm:top-0 sm:h-[560px] sm:w-[76%]">
+            <Image
+              src={scholarshipFlyers[0].src}
+              alt={scholarshipFlyers[0].alt}
+              fill
+              sizes="(min-width: 1024px) 430px, 86vw"
+              className="object-contain p-2"
+            />
+          </div>
+          <div className="relative aspect-[0.7] overflow-hidden rounded-[2.5rem] border border-white bg-white shadow-2xl shadow-sky-900/15 sm:absolute sm:bottom-0 sm:right-0 sm:h-[430px] sm:w-[54%]">
+            <Image
+              src={scholarshipFlyers[1].src}
+              alt={scholarshipFlyers[1].alt}
+              fill
+              sizes="(min-width: 1024px) 320px, 60vw"
+              className="object-contain p-2"
+            />
+          </div>
+        </motion.div>
+
+        <div>
+          <SectionTitle
+            eyebrow="Bourses d'études"
+            title="Étudiez en Chine avec une bourse complète."
+            copy="Une rubrique dédiée aux étudiants : JOS-Travel vous accompagne pour vérifier votre profil, constituer le dossier et suivre la procédure jusqu'au dépôt."
+          />
+
+          <div className="mt-9 grid gap-4 sm:grid-cols-3">
+            <Stat value="Diploma" label="Master & PhD" icon={GraduationCap} />
+            <Stat value="100 000 F" label="Ouverture dossier" icon={WalletCards} />
+            <Stat value="10 juin" label="Fin promotion" icon={CalendarDays} />
+          </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            {[...scholarshipOffer.conditions.slice(0, 2), ...scholarshipOffer.documents.slice(0, 2)].map((item) => (
+              <div key={item} className="flex items-center gap-3 rounded-2xl bg-white/78 px-5 py-4 text-sm font-bold text-sky-950 shadow-lg shadow-sky-900/5">
+                <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-cyan-500" />
+                {item}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+            <a
+              href="/bourses-etudes"
+              className="group inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-sky-950 px-7 py-4 font-black text-white shadow-2xl shadow-sky-900/15 transition hover:scale-105"
+            >
+              Voir la rubrique complète
+              <ArrowRight aria-hidden="true" className="h-5 w-5 transition group-hover:translate-x-1" />
+            </a>
+            <a
+              href={whatsappUrl(message)}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-green-500 to-cyan-400 px-7 py-4 font-black text-white shadow-2xl shadow-cyan-500/25 transition hover:scale-105"
+            >
+              <MessageCircle aria-hidden="true" className="h-5 w-5" />
+              Discuter sur WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Destinations() {
   return (
     <section id="destinations" className="px-5 py-24">
@@ -877,6 +965,7 @@ export function JosTravelSite() {
       <Hero />
       <Destinations />
       <Services />
+      <Scholarships />
       <About />
       <Gallery />
       <Testimonials />
