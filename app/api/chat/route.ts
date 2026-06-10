@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import type { Response, ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
 import { NextResponse } from "next/server";
 import { buildAssistantInstructions } from "@/lib/platform/ai-context";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -8,6 +9,13 @@ export const runtime = "nodejs";
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+};
+
+type OpenAIErrorShape = {
+  status?: unknown;
+  code?: unknown;
+  type?: unknown;
+  message?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -40,16 +48,7 @@ export async function POST(request: Request) {
 
   try {
     const client = new OpenAI({ apiKey });
-    const response = await client.responses.create({
-      model: process.env.OPENAI_MODEL ?? "gpt-5.5",
-      reasoning: { effort: "low" },
-      text: { verbosity: "low" },
-      instructions: buildAssistantInstructions(),
-      input: messages.map((message) => ({
-        role: message.role,
-        content: message.content
-      }))
-    });
+    const response = await createTravelResponse(client, messages);
 
     const answer = response.output_text?.trim() || "Je suis là. Pouvez-vous préciser votre besoin de voyage ?";
     await consumeCredit(admin, creditState.remainingCredits);
@@ -59,7 +58,9 @@ export async function POST(request: Request) {
       remainingCredits:
         creditState.configured && creditState.remainingCredits > 0 ? creditState.remainingCredits - 1 : null
     });
-  } catch {
+  } catch (error) {
+    console.error("JOS Travel chat failed", formatOpenAIError(error));
+
     return NextResponse.json(
       { error: "JOS Travel n'a pas pu répondre pour le moment. Merci de réessayer." },
       { status: 500 }
@@ -84,6 +85,70 @@ function normalizeMessages(value: unknown): ChatMessage[] {
       return content ? { role, content } : null;
     })
     .filter((message): message is ChatMessage => Boolean(message));
+}
+
+async function createTravelResponse(client: OpenAI, messages: ChatMessage[]): Promise<Response> {
+  const candidates = getModelCandidates();
+  let lastError: unknown = null;
+
+  for (const model of candidates) {
+    try {
+      return await client.responses.create(buildResponseRequest(model, messages));
+    } catch (error) {
+      lastError = error;
+      console.error("JOS Travel OpenAI model attempt failed", {
+        model,
+        error: formatOpenAIError(error)
+      });
+    }
+  }
+
+  throw lastError;
+}
+
+function buildResponseRequest(model: string, messages: ChatMessage[]): ResponseCreateParamsNonStreaming {
+  const request: ResponseCreateParamsNonStreaming = {
+    model,
+    stream: false,
+    instructions: buildAssistantInstructions(),
+    input: messages.map((message) => ({
+      role: message.role,
+      content: message.content
+    }))
+  };
+
+  if (model.startsWith("gpt-5")) {
+    return {
+      ...request,
+      reasoning: { effort: "low" },
+      text: { verbosity: "low" }
+    };
+  }
+
+  return request;
+}
+
+function getModelCandidates() {
+  return uniqueCompact([
+    process.env.OPENAI_MODEL,
+    process.env.OPENAI_FALLBACK_MODEL,
+    "gpt-5.4-mini"
+  ]);
+}
+
+function uniqueCompact(values: Array<string | undefined>) {
+  return Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))));
+}
+
+function formatOpenAIError(error: unknown) {
+  const shaped = error as OpenAIErrorShape;
+
+  return {
+    status: shaped.status,
+    code: shaped.code,
+    type: shaped.type,
+    message: error instanceof Error ? error.message : shaped.message
+  };
 }
 
 async function getCreditState(admin: ReturnType<typeof createAdminClient>) {
