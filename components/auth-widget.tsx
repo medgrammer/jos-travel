@@ -123,28 +123,35 @@ export function AuthWidget() {
     setLoading(true);
     setStatus(null);
 
-    const { error, data } = await supabase.auth.signUp({
+    const signupResponse = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(signup)
+    }).catch(() => null);
+
+    const signupPayload = signupResponse ? await signupResponse.json().catch(() => null) : null;
+
+    if (!signupResponse?.ok) {
+      setStatus(signupPayload?.error ?? "La création du compte a échoué. Merci de réessayer.");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
       email: signup.email,
-      password: signup.password,
-      options: {
-        data: {
-          full_name: signup.fullName,
-          phone: signup.phone,
-          city: signup.city,
-          country: signup.country,
-          company: signup.company,
-          trip_interest: signup.tripInterest
-        }
-      }
+      password: signup.password
     });
 
     if (error) {
-      setStatus(error.message);
-    } else {
-      setStatus(data.session ? "Compte créé et connecté." : "Compte créé. Vérifie ton email pour confirmer l'accès.");
-      setSignup(initialSignup);
-      await refreshProfile();
+      setStatus("Compte créé. Connectez-vous avec votre email et votre mot de passe.");
+      setLoading(false);
+      return;
     }
+
+    setStatus("Compte créé et connecté.");
+    setSignup(initialSignup);
+    await refreshProfile();
+    setOpen(false);
 
     setLoading(false);
   }
