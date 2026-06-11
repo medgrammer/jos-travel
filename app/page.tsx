@@ -1,15 +1,13 @@
 import { JosTravelSite } from "@/components/jos-travel-site";
 import { PlatformLock } from "@/components/platform-lock";
-import { getAuthenticatedPlatformUser } from "@/lib/platform/auth";
 import { getPlatformSubscriptionStatus } from "@/lib/platform/subscription";
 
-export default async function Home() {
-  const [subscriptionStatus, user] = await Promise.all([
-    getPlatformSubscriptionStatus(),
-    getAuthenticatedPlatformUser()
-  ]);
+export const dynamic = "force-dynamic";
 
-  if (subscriptionStatus.configured && !subscriptionStatus.active && user?.profile.role !== "admin") {
+export default async function Home() {
+  const subscriptionStatus = await getPlatformSubscriptionStatus();
+
+  if (!subscriptionStatus.active) {
     return <PlatformLock subscription={subscriptionStatus.subscription} />;
   }
 

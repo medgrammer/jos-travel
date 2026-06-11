@@ -21,7 +21,6 @@ import {
   RefreshCw,
   Settings2,
   ShieldCheck,
-  SlidersHorizontal,
   UsersRound,
   WalletCards,
   type LucideIcon
@@ -36,6 +35,9 @@ type AdminStats = {
     visits: number;
     clicks: number;
     whatsappClicks: number;
+  };
+  payments: {
+    pawapayConfigured: boolean;
   };
   subscriptionPricing: {
     monthlyUsd: number;
@@ -146,20 +148,12 @@ type ContactMessage = {
 export function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [selectedPackId, setSelectedPackId] = useState("starter");
-  const [packDrafts, setPackDrafts] = useState<Record<string, string>>({});
-  const [ruleDrafts, setRuleDrafts] = useState({
-    standardMessageCredits: "10",
-    complexMessageCredits: "20",
-    advancedAnalysisCredits: "50"
-  });
   const [creditPhone, setCreditPhone] = useState(defaultPaymentPhone());
   const [subscriptionPhone, setSubscriptionPhone] = useState(defaultPaymentPhone());
   const [subscriptionCycle, setSubscriptionCycle] = useState<BillingCycle>("monthly");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [chatSaving, setChatSaving] = useState(false);
-  const [packSavingId, setPackSavingId] = useState<string | null>(null);
-  const [rulesSaving, setRulesSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [mailboxOpen, setMailboxOpen] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -173,12 +167,6 @@ export function AdminDashboard() {
     if (response.ok) {
       const nextStats = payload as AdminStats;
       setStats(nextStats);
-      setPackDrafts(Object.fromEntries(nextStats.aiCreditPacks.map((pack) => [pack.id, String(pack.price_xaf)])));
-      setRuleDrafts({
-        standardMessageCredits: String(nextStats.aiSettings?.standard_message_credits ?? 10),
-        complexMessageCredits: String(nextStats.aiSettings?.complex_message_credits ?? 20),
-        advancedAnalysisCredits: String(nextStats.aiSettings?.advanced_analysis_credits ?? 50)
-      });
       setSelectedPackId((current) =>
         nextStats.aiCreditPacks.some((pack) => pack.id === current) ? current : nextStats.aiCreditPacks[0]?.id ?? "starter"
       );
@@ -196,6 +184,7 @@ export function AdminDashboard() {
 
   async function handleRecharge(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const paymentWindow = window.open("about:blank", "_blank");
     setSaving(true);
     setMessage(null);
 
@@ -207,78 +196,19 @@ export function AdminDashboard() {
 
     const payload = await response.json().catch(() => null);
     if (response.ok) {
-      setMessage("Page de paiement ouverte. Les crédits seront ajoutés après confirmation PawaPay.");
-      window.open(payload.trackingUrl, "_blank", "noopener,noreferrer");
+      setMessage("Page PawaPay ouverte. Les crédits seront ajoutés après confirmation.");
+      openPaymentDestination(payload, paymentWindow);
     } else {
-      setMessage(payload?.error ?? "Recharge impossible.");
+      paymentWindow?.close();
+      setMessage(formatPaymentError(payload?.error ?? "Recharge impossible."));
     }
 
     setSaving(false);
   }
 
-  async function handlePackSave(packId: string) {
-    setPackSavingId(packId);
-    setMessage(null);
-
-    const response = await fetch("/api/admin/ai-packs", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: packId, priceXaf: Number(packDrafts[packId]) })
-    });
-
-    const payload = await response.json().catch(() => null);
-    if (response.ok) {
-      setStats((state) =>
-        state
-          ? {
-              ...state,
-              aiCreditPacks: state.aiCreditPacks.map((pack) => (pack.id === packId ? payload.pack : pack))
-            }
-          : state
-      );
-      setMessage("Prix du pack AI_CREDIT mis à jour.");
-    } else {
-      setMessage(payload?.error ?? "Mise à jour du pack impossible.");
-    }
-
-    setPackSavingId(null);
-  }
-
-  async function handleRulesUpdate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setRulesSaving(true);
-    setMessage(null);
-
-    const response = await fetch("/api/admin/ai-settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        standardMessageCredits: Number(ruleDrafts.standardMessageCredits),
-        complexMessageCredits: Number(ruleDrafts.complexMessageCredits),
-        advancedAnalysisCredits: Number(ruleDrafts.advancedAnalysisCredits)
-      })
-    });
-
-    const payload = await response.json().catch(() => null);
-    if (response.ok) {
-      setStats((state) =>
-        state
-          ? {
-              ...state,
-              aiSettings: payload.aiSettings
-            }
-          : state
-      );
-      setMessage("Seuils AI_CREDIT mis à jour.");
-    } else {
-      setMessage(payload?.error ?? "Configuration AI_CREDIT impossible.");
-    }
-
-    setRulesSaving(false);
-  }
-
   async function handleSubscriptionPayment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const paymentWindow = window.open("about:blank", "_blank");
     setSaving(true);
     setMessage(null);
 
@@ -294,10 +224,11 @@ export function AdminDashboard() {
 
     const payload = await response.json().catch(() => null);
     if (response.ok) {
-      setMessage("Page de paiement ouverte. L'abonnement sera mis à jour après confirmation PawaPay.");
-      window.open(payload.trackingUrl, "_blank", "noopener,noreferrer");
+      setMessage("Page PawaPay ouverte. L'abonnement sera mis à jour après confirmation.");
+      openPaymentDestination(payload, paymentWindow);
     } else {
-      setMessage(payload?.error ?? "Paiement d'abonnement impossible.");
+      paymentWindow?.close();
+      setMessage(formatPaymentError(payload?.error ?? "Paiement d'abonnement impossible."));
     }
 
     setSaving(false);
@@ -483,6 +414,20 @@ export function AdminDashboard() {
               </div>
             ) : null}
 
+            {!stats.payments.pawapayConfigured ? (
+              <div className="mt-6 flex flex-col gap-3 rounded-[8px] border border-orange-200 bg-orange-50 p-5 text-sun-800 shadow-sm md:flex-row md:items-center md:justify-between">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle aria-hidden="true" className="mt-1 h-5 w-5 shrink-0" />
+                  <div>
+                    <p className="font-bold">PawaPay n&apos;est pas encore configuré sur le serveur.</p>
+                    <p className="mt-1 text-sm leading-6">
+                      Ajoutez la variable Netlify <span className="font-black">PAWAPAY_API_TOKEN</span> pour permettre le lancement des paiements.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
             <div className="mt-8 rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
               <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-3">
@@ -527,7 +472,7 @@ export function AdminDashboard() {
                   </span>
                 </label>
                 <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro PawaPay</span>
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro</span>
                   <input
                     value={subscriptionPhone}
                     onChange={(event) => setSubscriptionPhone(event.target.value)}
@@ -585,7 +530,7 @@ export function AdminDashboard() {
                   </select>
                 </label>
                 <label className="mt-4 block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro PawaPay</span>
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro</span>
                   <input
                     value={creditPhone}
                     onChange={(event) => setCreditPhone(event.target.value)}
@@ -601,62 +546,7 @@ export function AdminDashboard() {
                   {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
                   Acheter le pack sélectionné
                 </button>
-
-                <div className="mt-6 border-t border-cyan-100 pt-5">
-                  <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-700">Prix des packs</h3>
-                  <div className="mt-4 grid gap-3">
-                    {stats.aiCreditPacks.map((pack) => (
-                      <PackPriceRow
-                        key={pack.id}
-                        pack={pack}
-                        value={packDrafts[pack.id] ?? String(pack.price_xaf)}
-                        saving={packSavingId === pack.id}
-                        onChange={(value) => setPackDrafts((state) => ({ ...state, [pack.id]: value }))}
-                        onSave={() => handlePackSave(pack.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
                 </form>
-
-              <form onSubmit={handleRulesUpdate} className="rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-cyan-50 text-ocean-700">
-                    <SlidersHorizontal aria-hidden="true" className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <h2 className="font-bold text-ocean-950">Règles de consommation</h2>
-                    <p className="text-sm text-slate-500">Seuils abstraits appliqués aux réponses de la discussion.</p>
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-4">
-                  <CreditRuleInput
-                    label="Message standard"
-                    value={ruleDrafts.standardMessageCredits}
-                    onChange={(value) => setRuleDrafts((state) => ({ ...state, standardMessageCredits: value }))}
-                  />
-                  <CreditRuleInput
-                    label="Message complexe"
-                    value={ruleDrafts.complexMessageCredits}
-                    onChange={(value) => setRuleDrafts((state) => ({ ...state, complexMessageCredits: value }))}
-                  />
-                  <CreditRuleInput
-                    label="Analyse avancée"
-                    value={ruleDrafts.advancedAnalysisCredits}
-                    onChange={(value) => setRuleDrafts((state) => ({ ...state, advancedAnalysisCredits: value }))}
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={rulesSaving}
-                  className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-ocean-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-ocean-700 disabled:opacity-60"
-                >
-                  {rulesSaving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
-                  Enregistrer les seuils
-                </button>
-              </form>
 
               <div className="rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-3">
@@ -898,74 +788,6 @@ function ContactMessageCard({
   );
 }
 
-function PackPriceRow({
-  pack,
-  value,
-  saving,
-  onChange,
-  onSave
-}: {
-  pack: AiCreditPack;
-  value: string;
-  saving: boolean;
-  onChange: (value: string) => void;
-  onSave: () => void;
-}) {
-  return (
-    <div className="grid gap-3 rounded-[8px] border border-cyan-100 bg-cyan-50/60 p-3 sm:grid-cols-[1fr_8rem_auto] sm:items-center">
-      <div>
-        <p className="text-sm font-bold text-ocean-950">{pack.name}</p>
-        <p className="mt-1 text-xs font-semibold text-slate-500">{formatNumber(pack.credits)} AI_CREDIT</p>
-      </div>
-      <input
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        type="number"
-        min={0}
-        className="min-h-10 rounded-[8px] border border-cyan-100 bg-white px-3 text-sm outline-none transition focus:border-ocean-500"
-        aria-label={`Prix ${pack.name}`}
-      />
-      <button
-        type="button"
-        onClick={onSave}
-        disabled={saving}
-        className="inline-flex min-h-10 items-center justify-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-bold text-ocean-800 shadow-sm transition hover:bg-cyan-100 disabled:opacity-60"
-      >
-        {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
-        Sauver
-      </button>
-    </div>
-  );
-}
-
-function CreditRuleInput({
-  label,
-  value,
-  onChange
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-sm font-semibold text-slate-700">{label}</span>
-      <div className="flex items-center overflow-hidden rounded-[8px] border border-cyan-100 bg-cyan-50/60 focus-within:border-ocean-500">
-        <input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          type="number"
-          min={1}
-          className="min-h-12 w-full bg-transparent px-4 text-sm outline-none"
-        />
-        <span className="whitespace-nowrap border-l border-cyan-100 px-3 text-xs font-black text-ocean-700">
-          AI_CREDIT
-        </span>
-      </div>
-    </label>
-  );
-}
-
 function WalletTransactionCard({ transaction }: { transaction: AiWalletTransaction }) {
   const isPositive = transaction.amount > 0;
 
@@ -1181,6 +1003,31 @@ function isSubscriptionActive(value: AdminStats["cloudSubscription"]) {
 
 function defaultPaymentPhone() {
   return brand.whatsapp.replace(/^237/, "");
+}
+
+function openPaymentDestination(payload: { paymentUrl?: string; trackingUrl?: string } | null, paymentWindow: Window | null) {
+  const targetUrl = payload?.paymentUrl || payload?.trackingUrl;
+
+  if (!targetUrl) {
+    paymentWindow?.close();
+    return;
+  }
+
+  if (paymentWindow && !paymentWindow.closed) {
+    paymentWindow.opener = null;
+    paymentWindow.location.href = targetUrl;
+    return;
+  }
+
+  window.location.assign(targetUrl);
+}
+
+function formatPaymentError(error: string) {
+  if (error.includes("PAWAPAY_API_TOKEN") || error.toLowerCase().includes("token pawapay")) {
+    return "PawaPay n'est pas configuré sur Netlify. Ajoutez la variable serveur PAWAPAY_API_TOKEN, puis relancez le paiement.";
+  }
+
+  return error;
 }
 
 function getWalletAlert(totalPurchased: number, remainingCredits: number) {

@@ -124,6 +124,9 @@ export async function GET() {
       clicks: clicksResult.count ?? 0,
       whatsappClicks: whatsappClicksResult.count ?? 0
     },
+    payments: {
+      pawapayConfigured: Boolean(process.env.PAWAPAY_API_TOKEN)
+    },
     subscriptionPricing: {
       monthlyUsd: getSubscriptionPriceUsd("monthly"),
       annualUsd: getSubscriptionPriceUsd("annual")

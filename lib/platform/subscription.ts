@@ -12,7 +12,7 @@ export async function getPlatformSubscriptionStatus(): Promise<PlatformSubscript
   if (!admin) {
     return {
       configured: false,
-      active: true,
+      active: false,
       subscription: null
     };
   }
@@ -21,7 +21,7 @@ export async function getPlatformSubscriptionStatus(): Promise<PlatformSubscript
   if (error) {
     return {
       configured: true,
-      active: true,
+      active: false,
       subscription: null
     };
   }

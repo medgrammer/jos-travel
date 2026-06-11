@@ -3,13 +3,17 @@ import Image from "next/image";
 import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeft, CheckCircle2, FileText, GraduationCap, MessageCircle, Plane, ShieldCheck } from "lucide-react";
+import { PlatformLock } from "@/components/platform-lock";
 import { brand, scholarshipFlyers, scholarshipOffer } from "@/lib/site-data";
+import { getPlatformSubscriptionStatus } from "@/lib/platform/subscription";
 
 export const metadata: Metadata = {
   title: "Bourses d'études en Chine",
   description:
     "Programme JOS-Travel pour les opportunités d'études en Chine avec bourse complète, accompagnement de dossier et suivi de procédure."
 };
+
+export const dynamic = "force-dynamic";
 
 const whatsappMessage = [
   "Bonjour JOS-Travel, je souhaite obtenir des informations sur le service Bourses d'études en Chine.",
@@ -20,7 +24,13 @@ function whatsappUrl() {
   return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
 }
 
-export default function BoursesEtudesPage() {
+export default async function BoursesEtudesPage() {
+  const subscriptionStatus = await getPlatformSubscriptionStatus();
+
+  if (!subscriptionStatus.active) {
+    return <PlatformLock subscription={subscriptionStatus.subscription} />;
+  }
+
   return (
     <main className="min-h-screen bg-[#F8F6F2] text-slate-900">
       <section className="relative overflow-hidden bg-sky-950 px-5 pb-20 pt-6 text-white">
