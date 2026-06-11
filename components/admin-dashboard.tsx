@@ -488,9 +488,6 @@ export function AdminDashboard() {
                   {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
                   {subscriptionActionLabel}
                 </button>
-                <p className="text-xs font-semibold text-slate-500 lg:col-span-3">
-                  Le montant XAF est calculé automatiquement au moment du paiement.
-                </p>
               </form>
             </div>
 
