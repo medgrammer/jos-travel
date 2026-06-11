@@ -28,11 +28,19 @@ Ajouter :
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+SUPABASE_SECRET_KEY
 OPENAI_API_KEY
 NEXT_PUBLIC_SITE_URL=https://jostravel.site
+PAWAPAY_API_TOKEN
+PAWAPAY_API_BASE_URL=https://api.pawapay.io
+PAWAPAY_COUNTRY=CMR
+PAWAPAY_CURRENCY=XAF
+CLOUD_SUBSCRIPTION_MONTHLY_USD=40
+CLOUD_SUBSCRIPTION_ANNUAL_USD=400
 ```
+
+Le paiement PawaPay reste en XAF. L'abonnement est tarifé en USD puis converti automatiquement au moment du lancement du paiement. `USD_TO_XAF_RATE` peut être ajouté uniquement si vous souhaitez forcer un taux fixe.
 
 Ne pas publier `.env.local`.
 

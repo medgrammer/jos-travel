@@ -37,6 +37,10 @@ type AdminStats = {
     clicks: number;
     whatsappClicks: number;
   };
+  subscriptionPricing: {
+    monthlyUsd: number;
+    annualUsd: number;
+  };
   cloudSubscription: {
     provider: string | null;
     plan_name: string | null;
@@ -488,7 +492,8 @@ export function AdminDashboard() {
                   <div>
                     <h2 className="font-bold text-ocean-950">Abonnement cloud</h2>
                     <p className="text-sm text-slate-500">
-                      Fiche prête à renseigner dans Supabase pour suivre l&apos;hébergement et son expiration.
+                      Tarif {formatUsd(stats.subscriptionPricing.monthlyUsd)}/mois ou {formatUsd(stats.subscriptionPricing.annualUsd)}/an,
+                      converti en XAF au lancement PawaPay.
                     </p>
                   </div>
                 </div>
@@ -514,9 +519,12 @@ export function AdminDashboard() {
                     onChange={(event) => setSubscriptionCycle(event.target.value === "annual" ? "annual" : "monthly")}
                     className="min-h-12 w-full rounded-[8px] border border-cyan-100 bg-white px-4 text-sm outline-none transition focus:border-ocean-500"
                   >
-                    <option value="monthly">Mensuel</option>
-                    <option value="annual">Annuel</option>
+                    <option value="monthly">Mensuel - {formatUsd(stats.subscriptionPricing.monthlyUsd)}</option>
+                    <option value="annual">Annuel - {formatUsd(stats.subscriptionPricing.annualUsd)}</option>
                   </select>
+                  <span className="mt-2 block text-xs font-semibold text-slate-500">
+                    Le montant XAF est calculé automatiquement au moment du paiement.
+                  </span>
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro PawaPay</span>
@@ -1126,6 +1134,12 @@ function formatNumber(value: number) {
 
 function formatMoney(value: number) {
   return `${formatNumber(value)} FCFA`;
+}
+
+function formatUsd(value: number) {
+  return `$${new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: Number.isInteger(value) ? 0 : 2
+  }).format(value)}`;
 }
 
 function formatTransactionType(value: AiWalletTransaction["transaction_type"]) {

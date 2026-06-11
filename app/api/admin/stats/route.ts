@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/platform/auth";
+import { getSubscriptionPriceUsd } from "@/lib/platform/billing";
 import { createClient as createServerSupabaseClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -122,6 +123,10 @@ export async function GET() {
       visits: visitsResult.count ?? 0,
       clicks: clicksResult.count ?? 0,
       whatsappClicks: whatsappClicksResult.count ?? 0
+    },
+    subscriptionPricing: {
+      monthlyUsd: getSubscriptionPriceUsd("monthly"),
+      annualUsd: getSubscriptionPriceUsd("annual")
     },
     cloudSubscription: cloudSubscriptionResult.data,
     aiSettings: settingsResult.data,

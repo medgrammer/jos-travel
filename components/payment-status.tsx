@@ -14,6 +14,7 @@ type Payment = {
   credits: number | null;
   payment_url: string | null;
   applied_at: string | null;
+  metadata: Record<string, unknown>;
   updated_at: string;
 };
 
@@ -23,6 +24,8 @@ export function PaymentStatus({ depositId }: { depositId: string }) {
 
   const isDone = payment?.status === "COMPLETED" || Boolean(payment?.applied_at);
   const isFailed = ["FAILED", "REJECTED", "CANCELLED", "failed_to_start"].includes(payment?.status ?? "");
+  const subscriptionUsdPrice = getSubscriptionUsdPrice(payment);
+  const subscriptionRate = getSubscriptionFxRate(payment);
   const title = useMemo(() => {
     if (isDone) {
       return "Paiement confirme";
@@ -88,6 +91,12 @@ export function PaymentStatus({ depositId }: { depositId: string }) {
           <Info label="Montant" value={payment ? `${payment.amount_xaf.toLocaleString("fr-CM")} ${payment.currency}` : "-"} />
           <Info label="Type" value={payment?.payment_type === "subscription" ? "Abonnement cloud" : "Achat pack AI_CREDIT"} />
           <Info label="Cycle" value={payment?.billing_cycle === "annual" ? "Annuel" : payment?.billing_cycle === "monthly" ? "Mensuel" : "-"} />
+          {payment?.payment_type === "subscription" ? (
+            <>
+              <Info label="Tarif abonnement" value={subscriptionUsdPrice ? formatUsd(subscriptionUsdPrice) : "-"} />
+              <Info label="Conversion" value={subscriptionRate ? `1 USD = ${subscriptionRate.toLocaleString("fr-CM")} XAF` : "Au paiement"} />
+            </>
+          ) : null}
           <Info label="AI_CREDIT" value={payment?.credits ? payment.credits.toLocaleString("fr-CM") : "-"} />
         </div>
 
@@ -144,4 +153,23 @@ function Info({ label, value }: { label: string; value: string }) {
       <p className="mt-2 break-words text-sm font-semibold text-ocean-950">{value}</p>
     </div>
   );
+}
+
+function getSubscriptionUsdPrice(payment: Payment | null) {
+  return normalizePositiveNumber(payment?.metadata?.subscription_price_usd);
+}
+
+function getSubscriptionFxRate(payment: Payment | null) {
+  return normalizePositiveNumber(payment?.metadata?.usd_to_xaf_rate);
+}
+
+function normalizePositiveNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function formatUsd(value: number) {
+  return `$${new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: Number.isInteger(value) ? 0 : 2
+  }).format(value)}`;
 }

@@ -25,6 +25,13 @@ export type AiWallet = {
 };
 
 export const AI_CREDIT_UNIT_LABEL = "AI_CREDIT";
+export const SUBSCRIPTION_USD_PRICES: Record<BillingCycle, number> = {
+  monthly: 40,
+  annual: 400
+};
+
+const DEFAULT_USD_TO_XAF_RATE = 600;
+const FRANKFURTER_USD_XAF_URL = "https://api.frankfurter.dev/v2/rates?base=USD&quotes=XAF";
 
 export const FALLBACK_AI_CREDIT_PACKS: AiCreditPack[] = [
   { id: "starter", name: "Pack Starter", credits: 1000, price_xaf: 1000, sort_order: 10, is_active: true },
@@ -86,10 +93,34 @@ export function isCloudSubscriptionActive(subscription?: CloudSubscription | nul
   return Number.isFinite(expiry.getTime()) && expiry.getTime() >= Date.now();
 }
 
-export function getSubscriptionAmountXaf(cycle: BillingCycle) {
-  const key = cycle === "annual" ? "CLOUD_SUBSCRIPTION_ANNUAL_XAF" : "CLOUD_SUBSCRIPTION_MONTHLY_XAF";
-  const fallback = cycle === "annual" ? 120000 : 12000;
-  return normalizePositiveInteger(process.env[key], fallback);
+export type SubscriptionQuote = {
+  cycle: BillingCycle;
+  priceUsd: number;
+  usdToXafRate: number;
+  amountXaf: number;
+  rateSource: "env" | "frankfurter" | "fallback";
+  rateDate: string | null;
+  convertedAt: string;
+};
+
+export function getSubscriptionPriceUsd(cycle: BillingCycle) {
+  const key = cycle === "annual" ? "CLOUD_SUBSCRIPTION_ANNUAL_USD" : "CLOUD_SUBSCRIPTION_MONTHLY_USD";
+  return normalizePositiveNumber(process.env[key], SUBSCRIPTION_USD_PRICES[cycle]);
+}
+
+export async function getSubscriptionQuoteXaf(cycle: BillingCycle): Promise<SubscriptionQuote> {
+  const priceUsd = getSubscriptionPriceUsd(cycle);
+  const rate = await getUsdToXafRate();
+
+  return {
+    cycle,
+    priceUsd,
+    usdToXafRate: rate.value,
+    amountXaf: Math.max(1, Math.ceil(priceUsd * rate.value)),
+    rateSource: rate.source,
+    rateDate: rate.date,
+    convertedAt: new Date().toISOString()
+  };
 }
 
 export function getFallbackAiCreditPack(packId: string | null | undefined) {
@@ -146,7 +177,7 @@ export async function applyCompletedPayment(
         billing_cycle: cycle,
         amount_xaf: payment.amount_xaf,
         currency: payment.currency,
-        notes: "Paiement PawaPay confirme.",
+        notes: getSubscriptionPaymentNote(payment),
         last_payment_id: payment.id
       })
       .eq("id", true);
@@ -240,7 +271,62 @@ function normalizeIntegerLike(value: unknown) {
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-function normalizePositiveInteger(value: string | undefined, fallback: number) {
-  const parsed = Number.parseInt(value ?? "", 10);
+function normalizePositiveNumber(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+async function getUsdToXafRate(): Promise<{ value: number; source: "env" | "frankfurter" | "fallback"; date: string | null }> {
+  const configured = normalizePositiveNumber(process.env.USD_TO_XAF_RATE, 0);
+  if (configured > 0) {
+    return { value: configured, source: "env", date: null };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const response = await fetch(FRANKFURTER_USD_XAF_URL, {
+      cache: "no-store",
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      throw new Error(`FX request failed: ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const firstRate = Array.isArray(payload) ? payload[0] : payload;
+    const rate = Number(firstRate?.rate ?? firstRate?.rates?.XAF);
+
+    if (Number.isFinite(rate) && rate > 0) {
+      return {
+        value: rate,
+        source: "frankfurter",
+        date: typeof firstRate?.date === "string" ? firstRate.date : null
+      };
+    }
+  } catch {
+    // Payment can still proceed with a conservative configured fallback.
+  }
+
+  return { value: DEFAULT_USD_TO_XAF_RATE, source: "fallback", date: null };
+}
+
+function getSubscriptionPaymentNote(payment: PaymentTransaction) {
+  const metadata = payment.metadata ?? {};
+  const priceUsd = normalizePositiveNumber(String(metadata.subscription_price_usd ?? ""), 0);
+  const rate = normalizePositiveNumber(String(metadata.usd_to_xaf_rate ?? ""), 0);
+
+  if (priceUsd > 0 && rate > 0) {
+    return `Paiement PawaPay confirme. Tarif ${formatUsd(priceUsd)} converti en XAF au moment du paiement.`;
+  }
+
+  return "Paiement PawaPay confirme. Tarif abonnement converti en XAF au moment du paiement.";
+}
+
+function formatUsd(value: number) {
+  return `$${new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: Number.isInteger(value) ? 0 : 2
+  }).format(value)}`;
 }
