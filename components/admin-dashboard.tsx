@@ -456,7 +456,10 @@ export function AdminDashboard() {
                 <SubscriptionField label="Dernière mise à jour" value={formatDate(stats.cloudSubscription?.updated_at)} />
               </div>
 
-              <form onSubmit={handleSubscriptionPayment} className="mt-5 grid gap-4 rounded-[8px] border border-cyan-100 bg-cyan-50/50 p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+              <form
+                onSubmit={handleSubscriptionPayment}
+                className="mt-5 grid gap-4 rounded-[8px] border border-cyan-100 bg-cyan-50/50 p-4 lg:grid-cols-[minmax(14rem,1fr)_minmax(14rem,1fr)_auto] lg:items-end"
+              >
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">Cycle abonnement</span>
                   <select
@@ -467,9 +470,6 @@ export function AdminDashboard() {
                     <option value="monthly">Mensuel - {formatUsd(stats.subscriptionPricing.monthlyUsd)}</option>
                     <option value="annual">Annuel - {formatUsd(stats.subscriptionPricing.annualUsd)}</option>
                   </select>
-                  <span className="mt-2 block text-xs font-semibold text-slate-500">
-                    Le montant XAF est calculé automatiquement au moment du paiement.
-                  </span>
                 </label>
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro</span>
@@ -488,6 +488,9 @@ export function AdminDashboard() {
                   {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
                   {subscriptionActionLabel}
                 </button>
+                <p className="text-xs font-semibold text-slate-500 lg:col-span-3">
+                  Le montant XAF est calculé automatiquement au moment du paiement.
+                </p>
               </form>
             </div>
 
