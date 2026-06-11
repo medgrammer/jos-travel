@@ -436,10 +436,6 @@ export function AdminDashboard() {
                   </span>
                   <div>
                     <h2 className="font-bold text-ocean-950">Abonnement cloud</h2>
-                    <p className="text-sm text-slate-500">
-                      Tarif {formatUsd(stats.subscriptionPricing.monthlyUsd)}/mois ou {formatUsd(stats.subscriptionPricing.annualUsd)}/an,
-                      converti en XAF au lancement PawaPay.
-                    </p>
                   </div>
                 </div>
                 <div className="inline-flex items-center gap-3 rounded-full bg-cyan-50 px-4 py-2 text-sm font-bold text-ocean-800">
