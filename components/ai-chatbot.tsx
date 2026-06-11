@@ -51,6 +51,7 @@ export function AiChatbot() {
   const [modeState, setModeState] = useState<ChatModeState | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
+  const conversationIdRef = useRef(createConversationId());
   const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
   const latestAssistantMessage = [...messages].reverse().find((message) => message.role === "assistant");
   const showWhatsAppHandoff =
@@ -118,7 +119,7 @@ export function AiChatbot() {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages: nextMessages })
+      body: JSON.stringify({ messages: nextMessages, conversationId: conversationIdRef.current })
     }).catch(() => null);
 
     const payload = response ? await response.json().catch(() => null) : null;
@@ -253,4 +254,12 @@ function shouldSuggestWhatsAppHandoff(content: string) {
   const normalized = content.toLowerCase();
 
   return handoffKeywords.some((keyword) => normalized.includes(keyword));
+}
+
+function createConversationId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }

@@ -10,9 +10,12 @@ export async function GET() {
     return NextResponse.json({ chatMode: "ai", availableCredits: true, whatsappUrl: defaultWhatsAppUrl() });
   }
 
-  const { data } = await admin.from("ai_settings").select("chat_mode,remaining_credits").eq("id", true).maybeSingle();
-  const chatMode = data?.chat_mode === "human" ? "human" : "ai";
-  const remainingCredits = Number(data?.remaining_credits ?? 0);
+  const [{ data: settings }, { data: wallet }] = await Promise.all([
+    admin.from("ai_settings").select("chat_mode").eq("id", true).maybeSingle(),
+    admin.from("ai_wallet").select("remaining_credits").eq("id", true).maybeSingle()
+  ]);
+  const chatMode = settings?.chat_mode === "human" ? "human" : "ai";
+  const remainingCredits = Number(wallet?.remaining_credits ?? 0);
 
   return NextResponse.json({
     chatMode,

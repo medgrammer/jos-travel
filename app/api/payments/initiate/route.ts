@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/platform/auth";
 import {
-  getAiCreditPaymentAmountXaf,
+  getFallbackAiCreditPack,
   getPublicSiteUrl,
   getSubscriptionAmountXaf,
   type BillingCycle,
+  type AiCreditPack,
   type PaymentType
 } from "@/lib/platform/billing";
 import { createPawaPayPaymentPage } from "@/lib/pawapay";
@@ -30,16 +31,21 @@ export async function POST(request: Request) {
   }
 
   const billingCycle = normalizeBillingCycle(body?.billingCycle);
-  const credits = normalizeCredits(body?.credits);
+  const packId = normalizePackId(body?.packId);
+  const pack = paymentType === "ai_credit" ? await getAiCreditPack(supabase, packId) : null;
+  const credits = paymentType === "ai_credit" ? pack?.credits ?? 0 : null;
   const phone = typeof body?.phone === "string" ? body.phone.slice(0, 32) : "";
   const depositId = crypto.randomUUID();
   const siteUrl = getPublicSiteUrl(request);
   const returnUrl = `${siteUrl}/paiement/${depositId}`;
-  const amountXaf =
-    paymentType === "subscription" ? getSubscriptionAmountXaf(billingCycle) : getAiCreditPaymentAmountXaf(credits);
+  const amountXaf = paymentType === "subscription" ? getSubscriptionAmountXaf(billingCycle) : pack?.price_xaf ?? 0;
 
   if (amountXaf <= 0) {
     return NextResponse.json({ error: "Montant de paiement invalide." }, { status: 400 });
+  }
+
+  if (paymentType === "ai_credit" && (!pack || !credits)) {
+    return NextResponse.json({ error: "Pack AI_CREDIT invalide ou inactif." }, { status: 400 });
   }
 
   const { data: payment, error: insertError } = await supabase
@@ -52,11 +58,15 @@ export async function POST(request: Request) {
       amount_xaf: amountXaf,
       currency: "XAF",
       billing_cycle: paymentType === "subscription" ? billingCycle : null,
-      credits: paymentType === "ai_credit" ? credits : null,
+      credits,
       payer_phone: phone || null,
       return_url: returnUrl,
       metadata: {
-        source: "admin_dashboard"
+        source: "admin_dashboard",
+        unit: "AI_CREDIT",
+        pack_id: pack?.id ?? null,
+        pack_name: pack?.name ?? null,
+        credits
       },
       created_by: adminUser.profile.id
     })
@@ -73,10 +83,11 @@ export async function POST(request: Request) {
       returnUrl,
       amountXaf,
       phoneNumber: phone,
-      reason: paymentType === "subscription" ? "Abonnement JOS-Travel" : "Recharge credit JOS-Travel",
+      reason: paymentType === "subscription" ? "Abonnement JOS-Travel" : `Achat ${pack?.name ?? "pack AI_CREDIT"}`,
       metadata: [
         { orderId: depositId },
-        { type: paymentType }
+        { type: paymentType },
+        ...(pack ? [{ packId: pack.id }] : [])
       ]
     });
 
@@ -120,11 +131,28 @@ function normalizeBillingCycle(value: unknown): BillingCycle {
   return value === "annual" ? "annual" : "monthly";
 }
 
-function normalizeCredits(value: unknown) {
-  const credits = Number(value);
-  if (!Number.isInteger(credits) || credits < 1 || credits > 100000) {
-    return 1;
+function normalizePackId(value: unknown) {
+  return typeof value === "string" ? value.slice(0, 64) : "starter";
+}
+
+async function getAiCreditPack(
+  supabase: ReturnType<typeof createAdminClient>,
+  packId: string
+): Promise<AiCreditPack | null> {
+  if (!supabase) {
+    return getFallbackAiCreditPack(packId);
   }
 
-  return credits;
+  const { data, error } = await supabase
+    .from("ai_credit_packs")
+    .select("id,name,credits,price_xaf,sort_order,is_active")
+    .eq("id", packId)
+    .eq("is_active", true)
+    .maybeSingle<AiCreditPack>();
+
+  if (error) {
+    return getFallbackAiCreditPack(packId);
+  }
+
+  return data;
 }

@@ -17,5 +17,8 @@ export type AiSettings = {
   id: boolean;
   monthly_credits: number;
   remaining_credits: number;
+  standard_message_credits?: number;
+  complex_message_credits?: number;
+  advanced_analysis_credits?: number;
   updated_at: string;
 };

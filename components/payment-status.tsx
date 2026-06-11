@@ -86,9 +86,9 @@ export function PaymentStatus({ depositId }: { depositId: string }) {
           <Info label="Reference" value={depositId} />
           <Info label="Statut" value={payment?.status ?? "Chargement"} />
           <Info label="Montant" value={payment ? `${payment.amount_xaf.toLocaleString("fr-CM")} ${payment.currency}` : "-"} />
-          <Info label="Type" value={payment?.payment_type === "subscription" ? "Abonnement cloud" : "Recharge credit IA"} />
+          <Info label="Type" value={payment?.payment_type === "subscription" ? "Abonnement cloud" : "Achat pack AI_CREDIT"} />
           <Info label="Cycle" value={payment?.billing_cycle === "annual" ? "Annuel" : payment?.billing_cycle === "monthly" ? "Mensuel" : "-"} />
-          <Info label="Credits" value={payment?.credits ? String(payment.credits) : "-"} />
+          <Info label="AI_CREDIT" value={payment?.credits ? payment.credits.toLocaleString("fr-CM") : "-"} />
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">

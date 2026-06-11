@@ -4,6 +4,36 @@ import { brand } from "@/lib/site-data";
 export type BillingCycle = "monthly" | "annual";
 export type ChatMode = "ai" | "human";
 export type PaymentType = "subscription" | "ai_credit";
+export type AiUsageType = "standard_message" | "complex_message" | "advanced_analysis";
+export type AiCreditPackId = "starter" | "standard" | "premium" | "business" | "enterprise" | "corporate";
+
+export type AiCreditPack = {
+  id: string;
+  name: string;
+  credits: number;
+  price_xaf: number;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type AiWallet = {
+  id: boolean;
+  total_purchased: number;
+  total_consumed: number;
+  remaining_credits: number;
+  updated_at: string;
+};
+
+export const AI_CREDIT_UNIT_LABEL = "AI_CREDIT";
+
+export const FALLBACK_AI_CREDIT_PACKS: AiCreditPack[] = [
+  { id: "starter", name: "Pack Starter", credits: 1000, price_xaf: 1000, sort_order: 10, is_active: true },
+  { id: "standard", name: "Pack Standard", credits: 5000, price_xaf: 4500, sort_order: 20, is_active: true },
+  { id: "premium", name: "Pack Premium", credits: 10000, price_xaf: 8000, sort_order: 30, is_active: true },
+  { id: "business", name: "Pack Business", credits: 20000, price_xaf: 15000, sort_order: 40, is_active: true },
+  { id: "enterprise", name: "Pack Enterprise", credits: 50000, price_xaf: 35000, sort_order: 50, is_active: true },
+  { id: "corporate", name: "Pack Corporate", credits: 100000, price_xaf: 65000, sort_order: 60, is_active: true }
+];
 
 export type CloudSubscription = {
   id: boolean;
@@ -62,14 +92,8 @@ export function getSubscriptionAmountXaf(cycle: BillingCycle) {
   return normalizePositiveInteger(process.env[key], fallback);
 }
 
-export function getAiCreditUnitPriceXaf() {
-  const estimatedRealCost = normalizePositiveInteger(process.env.OPENAI_REAL_COST_PER_RESPONSE_XAF, 10);
-  const markup = normalizePositiveNumber(process.env.OPENAI_COST_MARKUP, 5);
-  return Math.max(1, Math.ceil(estimatedRealCost * markup));
-}
-
-export function getAiCreditPaymentAmountXaf(credits: number) {
-  return credits * getAiCreditUnitPriceXaf();
+export function getFallbackAiCreditPack(packId: string | null | undefined) {
+  return FALLBACK_AI_CREDIT_PACKS.find((pack) => pack.id === packId) ?? FALLBACK_AI_CREDIT_PACKS[0];
 }
 
 export function addBillingCycle(startDate: Date, cycle: BillingCycle) {
@@ -129,19 +153,13 @@ export async function applyCompletedPayment(
   }
 
   if (payment.payment_type === "ai_credit" && payment.credits) {
-    const { data } = await supabase
-      .from("ai_settings")
-      .select("remaining_credits")
-      .eq("id", true)
-      .maybeSingle<{ remaining_credits: number }>();
-
-    const nextCredits = Number(data?.remaining_credits ?? 0) + payment.credits;
-
-    await supabase.from("ai_settings").update({ remaining_credits: nextCredits }).eq("id", true);
-    await supabase.from("ai_credit_events").insert({
-      amount: payment.credits,
-      reason: "Recharge PawaPay",
-      created_by: actorId
+    const pack = getPaymentPackInfo(payment);
+    await applyAiCreditPurchase(supabase, {
+      credits: pack.credits,
+      packId: pack.packId,
+      packName: pack.packName,
+      paymentId: payment.id,
+      actorId
     });
   }
 
@@ -151,12 +169,78 @@ export async function applyCompletedPayment(
     .eq("id", payment.id);
 }
 
-function normalizePositiveInteger(value: string | undefined, fallback: number) {
-  const parsed = Number.parseInt(value ?? "", 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+async function applyAiCreditPurchase(
+  supabase: SupabaseClient,
+  purchase: {
+    credits: number;
+    packId: string | null;
+    packName: string;
+    paymentId: string;
+    actorId: string | null;
+  }
+) {
+  if (purchase.credits <= 0) {
+    return;
+  }
+
+  const { data: wallet } = await supabase
+    .from("ai_wallet")
+    .select("total_purchased,total_consumed,remaining_credits")
+    .eq("id", true)
+    .maybeSingle<{ total_purchased: number; total_consumed: number; remaining_credits: number }>();
+
+  const currentPurchased = Number(wallet?.total_purchased ?? 0);
+  const currentConsumed = Number(wallet?.total_consumed ?? 0);
+  const totalPurchased = currentPurchased + purchase.credits;
+  const balanceAfter = Math.max(0, totalPurchased - currentConsumed);
+
+  await supabase.from("ai_wallet").upsert({
+    id: true,
+    total_purchased: totalPurchased,
+    total_consumed: currentConsumed
+  });
+
+  await supabase.from("ai_wallet_transactions").insert({
+    transaction_type: "purchase",
+    amount: purchase.credits,
+    balance_after: balanceAfter,
+    pack_id: purchase.packId,
+    payment_id: purchase.paymentId,
+    reason: `Achat ${purchase.packName}`,
+    metadata: {
+      unit: AI_CREDIT_UNIT_LABEL
+    },
+    created_by: purchase.actorId
+  });
+
+  await supabase.from("ai_settings").update({ remaining_credits: balanceAfter }).eq("id", true);
+
+  await supabase.from("ai_credit_events").insert({
+    amount: purchase.credits,
+    reason: `Achat ${purchase.packName}`,
+    created_by: purchase.actorId
+  });
 }
 
-function normalizePositiveNumber(value: string | undefined, fallback: number) {
-  const parsed = Number.parseFloat(value ?? "");
+function getPaymentPackInfo(payment: PaymentTransaction) {
+  const metadata = payment.metadata ?? {};
+  const packId = typeof metadata.pack_id === "string" ? metadata.pack_id : null;
+  const packName = typeof metadata.pack_name === "string" ? metadata.pack_name : "Pack AI_CREDIT";
+  const credits = normalizeIntegerLike(metadata.credits) ?? payment.credits ?? 0;
+
+  return {
+    packId,
+    packName,
+    credits
+  };
+}
+
+function normalizeIntegerLike(value: unknown) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function normalizePositiveInteger(value: string | undefined, fallback: number) {
+  const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useEffect, useMemo, useState, type ComponentProps } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -15,6 +15,7 @@ import {
   Globe2,
   GraduationCap,
   Headphones,
+  LoaderCircle,
   Mail,
   MapPin,
   MapPinned,
@@ -22,6 +23,7 @@ import {
   MessageCircle,
   Phone,
   Plane,
+  Search,
   Send,
   ShieldCheck,
   Sparkles,
@@ -325,6 +327,9 @@ const siteCopy = {
       formTitle: "Demander une offre personnalisée",
       placeholders: {
         name: "Nom complet",
+        email: "Email (optionnel)",
+        country: "Pays",
+        searchCountry: "Rechercher un pays...",
         phone: "Téléphone / WhatsApp",
         destination: "Destination souhaitée",
         service: "Type de service",
@@ -341,9 +346,16 @@ const siteCopy = {
         "Événement / groupe"
       ],
       submit: "Envoyer ma demande",
+      sending: "Envoi en cours...",
+      successTitle: "Demande envoyée",
+      success:
+        "Merci. Votre demande a bien été enregistrée. L'équipe JOS-Travel vous répondra rapidement.",
+      error: "Impossible d'envoyer la demande pour le moment. Merci de réessayer.",
       whatsappIntro: "Bonjour JOS-Travel, je souhaite une offre personnalisée.",
       fields: {
         name: "Nom",
+        email: "Email",
+        country: "Pays",
         phone: "Téléphone",
         destination: "Destination",
         service: "Service",
@@ -632,6 +644,9 @@ const siteCopy = {
       formTitle: "Request a personalized offer",
       placeholders: {
         name: "Full name",
+        email: "Email (optional)",
+        country: "Country",
+        searchCountry: "Search a country...",
         phone: "Phone / WhatsApp",
         destination: "Desired destination",
         service: "Service type",
@@ -648,9 +663,16 @@ const siteCopy = {
         "Event / group travel"
       ],
       submit: "Send my request",
+      sending: "Sending...",
+      successTitle: "Request sent",
+      success:
+        "Thank you. Your request has been saved. The JOS-Travel team will reply shortly.",
+      error: "We could not send the request right now. Please try again.",
       whatsappIntro: "Hello JOS-Travel, I would like a personalized offer.",
       fields: {
         name: "Name",
+        email: "Email",
+        country: "Country",
         phone: "Phone",
         destination: "Destination",
         service: "Service",
@@ -682,6 +704,74 @@ function whatsappUrl(message = "Bonjour JOS-Travel, je souhaite réserver ou obt
 
 function phoneHref(phone: string) {
   return `tel:${phone.replace(/\s+/g, "")}`;
+}
+
+type CountryOption = {
+  code: string;
+  dialCode: string;
+  nameFr: string;
+  nameEn: string;
+};
+
+const COUNTRY_OPTIONS: CountryOption[] = [
+  { code: "CM", dialCode: "+237", nameFr: "Cameroun", nameEn: "Cameroon" },
+  { code: "FR", dialCode: "+33", nameFr: "France", nameEn: "France" },
+  { code: "CN", dialCode: "+86", nameFr: "Chine", nameEn: "China" },
+  { code: "AE", dialCode: "+971", nameFr: "Émirats arabes unis", nameEn: "United Arab Emirates" },
+  { code: "TR", dialCode: "+90", nameFr: "Turquie", nameEn: "Turkey" },
+  { code: "ZA", dialCode: "+27", nameFr: "Afrique du Sud", nameEn: "South Africa" },
+  { code: "KE", dialCode: "+254", nameFr: "Kenya", nameEn: "Kenya" },
+  { code: "TZ", dialCode: "+255", nameFr: "Tanzanie", nameEn: "Tanzania" },
+  { code: "UG", dialCode: "+256", nameFr: "Ouganda", nameEn: "Uganda" },
+  { code: "US", dialCode: "+1", nameFr: "États-Unis", nameEn: "United States" },
+  { code: "CA", dialCode: "+1", nameFr: "Canada", nameEn: "Canada" },
+  { code: "GB", dialCode: "+44", nameFr: "Royaume-Uni", nameEn: "United Kingdom" },
+  { code: "BE", dialCode: "+32", nameFr: "Belgique", nameEn: "Belgium" },
+  { code: "CH", dialCode: "+41", nameFr: "Suisse", nameEn: "Switzerland" },
+  { code: "DE", dialCode: "+49", nameFr: "Allemagne", nameEn: "Germany" },
+  { code: "IT", dialCode: "+39", nameFr: "Italie", nameEn: "Italy" },
+  { code: "ES", dialCode: "+34", nameFr: "Espagne", nameEn: "Spain" },
+  { code: "PT", dialCode: "+351", nameFr: "Portugal", nameEn: "Portugal" },
+  { code: "NL", dialCode: "+31", nameFr: "Pays-Bas", nameEn: "Netherlands" },
+  { code: "LU", dialCode: "+352", nameFr: "Luxembourg", nameEn: "Luxembourg" },
+  { code: "MA", dialCode: "+212", nameFr: "Maroc", nameEn: "Morocco" },
+  { code: "DZ", dialCode: "+213", nameFr: "Algérie", nameEn: "Algeria" },
+  { code: "TN", dialCode: "+216", nameFr: "Tunisie", nameEn: "Tunisia" },
+  { code: "SN", dialCode: "+221", nameFr: "Sénégal", nameEn: "Senegal" },
+  { code: "CI", dialCode: "+225", nameFr: "Côte d'Ivoire", nameEn: "Ivory Coast" },
+  { code: "GA", dialCode: "+241", nameFr: "Gabon", nameEn: "Gabon" },
+  { code: "CG", dialCode: "+242", nameFr: "Congo", nameEn: "Congo" },
+  { code: "CD", dialCode: "+243", nameFr: "RD Congo", nameEn: "DR Congo" },
+  { code: "CF", dialCode: "+236", nameFr: "Centrafrique", nameEn: "Central African Republic" },
+  { code: "TD", dialCode: "+235", nameFr: "Tchad", nameEn: "Chad" },
+  { code: "GQ", dialCode: "+240", nameFr: "Guinée équatoriale", nameEn: "Equatorial Guinea" },
+  { code: "NG", dialCode: "+234", nameFr: "Nigeria", nameEn: "Nigeria" },
+  { code: "GH", dialCode: "+233", nameFr: "Ghana", nameEn: "Ghana" },
+  { code: "BJ", dialCode: "+229", nameFr: "Bénin", nameEn: "Benin" },
+  { code: "TG", dialCode: "+228", nameFr: "Togo", nameEn: "Togo" },
+  { code: "RW", dialCode: "+250", nameFr: "Rwanda", nameEn: "Rwanda" },
+  { code: "BI", dialCode: "+257", nameFr: "Burundi", nameEn: "Burundi" },
+  { code: "ET", dialCode: "+251", nameFr: "Éthiopie", nameEn: "Ethiopia" },
+  { code: "EG", dialCode: "+20", nameFr: "Égypte", nameEn: "Egypt" },
+  { code: "IN", dialCode: "+91", nameFr: "Inde", nameEn: "India" },
+  { code: "JP", dialCode: "+81", nameFr: "Japon", nameEn: "Japan" },
+  { code: "KR", dialCode: "+82", nameFr: "Corée du Sud", nameEn: "South Korea" },
+  { code: "BR", dialCode: "+55", nameFr: "Brésil", nameEn: "Brazil" },
+  { code: "MX", dialCode: "+52", nameFr: "Mexique", nameEn: "Mexico" },
+  { code: "AU", dialCode: "+61", nameFr: "Australie", nameEn: "Australia" }
+];
+
+function getCountryByCode(code: string) {
+  return COUNTRY_OPTIONS.find((country) => country.code === code) ?? COUNTRY_OPTIONS[0];
+}
+
+function getCountryLabel(country: CountryOption, language: Language) {
+  return language === "en" ? country.nameEn : country.nameFr;
+}
+
+function buildFullContactPhone(dialCode: string, phone: string) {
+  const digits = phone.replace(/[^\d]/g, "").replace(/^0+/, "");
+  return digits ? `${dialCode}${digits}` : "";
 }
 
 function SectionTitle({
@@ -774,13 +864,13 @@ function Header({
     >
       <nav
         className={cx(
-          "mx-auto flex max-w-7xl items-center justify-between px-4 py-4 transition-all duration-500 md:px-5",
+          "mx-auto flex max-w-[92rem] flex-wrap items-center justify-between gap-x-6 gap-y-4 px-4 py-4 transition-all duration-500 md:px-6",
           scrolled
-            ? "rounded-full border border-white/50 bg-white/78 shadow-2xl shadow-sky-900/10 backdrop-blur-2xl"
+            ? "rounded-[2rem] border border-white/50 bg-white/86 shadow-2xl shadow-sky-900/10 backdrop-blur-2xl"
             : "bg-transparent"
         )}
       >
-        <a href="#accueil" className="flex min-w-0 items-center gap-3">
+        <a href="#accueil" className="flex min-w-[210px] items-center gap-4">
           <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-white shadow-lg ring-1 ring-white/50">
             <Image
               src="/media/jos-logo.jpeg"
@@ -792,31 +882,16 @@ function Header({
             />
           </span>
           <span className="leading-tight">
-            <span className={cx("block text-lg font-black tracking-tight", scrolled ? "text-sky-950" : "text-white")}>
+            <span className={cx("block whitespace-nowrap text-lg font-black tracking-tight", scrolled ? "text-sky-950" : "text-white")}>
               {brand.name}
             </span>
-            <span className={cx("hidden text-xs font-semibold sm:block", scrolled ? "text-cyan-600" : "text-cyan-100")}>
+            <span className={cx("hidden whitespace-nowrap text-xs font-semibold sm:block", scrolled ? "text-cyan-600" : "text-cyan-100")}>
               {copy.brandSubtitle}
             </span>
           </span>
         </a>
 
-        <div className="hidden items-center gap-5 xl:flex">
-          {copy.nav.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={cx(
-                "text-sm font-semibold transition hover:text-cyan-400",
-                scrolled ? "text-slate-700" : "text-white"
-              )}
-            >
-              {item.label}
-            </a>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-3">
           <LanguageToggle copy={copy} onToggle={onLanguageToggle} scrolled={scrolled} />
           <a
             href={whatsappUrl()}
@@ -836,6 +911,26 @@ function Header({
           >
             {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
           </button>
+        </div>
+
+        <div
+          className={cx(
+            "hidden w-full items-center justify-center gap-2 border-t pt-3 xl:flex",
+            scrolled ? "border-cyan-100/80" : "border-white/20"
+          )}
+        >
+          {copy.nav.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className={cx(
+                "whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold leading-none transition hover:-translate-y-0.5 hover:bg-cyan-50 hover:text-cyan-600",
+                scrolled ? "text-slate-700" : "text-white hover:bg-white/15 hover:text-white"
+              )}
+            >
+              {item.label}
+            </a>
+          ))}
         </div>
       </nav>
 
@@ -1467,33 +1562,68 @@ function Faq({ copy }: { copy: SiteCopy }) {
   );
 }
 
-function Contact({ copy }: { copy: SiteCopy }) {
+type ContactSubmitState = {
+  type: "success" | "error";
+  message: string;
+} | null;
+
+function Contact({ copy, language }: { copy: SiteCopy; language: Language }) {
   const [form, setForm] = useState({
     name: "",
+    email: "",
+    countryCode: "CM",
     phone: "",
     destination: "",
     service: "",
     message: ""
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitState, setSubmitState] = useState<ContactSubmitState>(null);
 
-  const href = useMemo(() => {
-    const text = [
-      copy.contact.whatsappIntro,
-      form.name ? `${copy.contact.fields.name}: ${form.name}` : "",
-      form.phone ? `${copy.contact.fields.phone}: ${form.phone}` : "",
-      form.destination ? `${copy.contact.fields.destination}: ${form.destination}` : "",
-      form.service ? `${copy.contact.fields.service}: ${form.service}` : "",
-      form.message ? `${copy.contact.fields.message}: ${form.message}` : ""
-    ]
-      .filter(Boolean)
-      .join("\n");
+  const selectedCountry = useMemo(() => getCountryByCode(form.countryCode), [form.countryCode]);
+  const fullPhone = useMemo(() => buildFullContactPhone(selectedCountry.dialCode, form.phone), [form.phone, selectedCountry]);
 
-    return whatsappUrl(text);
-  }, [copy, form]);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    window.open(href, "_blank", "noopener,noreferrer");
+    setSubmitting(true);
+    setSubmitState(null);
+
+    const response = await fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: form.name,
+        email: form.email,
+        countryName: getCountryLabel(selectedCountry, language),
+        countryCode: selectedCountry.code,
+        dialCode: selectedCountry.dialCode,
+        phone: form.phone,
+        fullPhone,
+        destination: form.destination,
+        service: form.service,
+        message: form.message,
+        locale: language
+      })
+    });
+
+    const payload = await response.json().catch(() => null);
+
+    if (response.ok) {
+      setForm((state) => ({
+        name: "",
+        email: "",
+        countryCode: state.countryCode,
+        phone: "",
+        destination: "",
+        service: "",
+        message: ""
+      }));
+      setSubmitState({ type: "success", message: payload?.message ?? copy.contact.success });
+    } else {
+      setSubmitState({ type: "error", message: payload?.error ?? copy.contact.error });
+    }
+
+    setSubmitting(false);
   }
 
   return (
@@ -1539,17 +1669,57 @@ function Contact({ copy }: { copy: SiteCopy }) {
           className="rounded-[2.5rem] border border-white/60 bg-white/78 p-7 shadow-2xl backdrop-blur-2xl md:p-9"
         >
           <div className="mb-6 text-2xl font-black text-sky-950">{copy.contact.formTitle}</div>
+          {submitState ? (
+            <div
+              role={submitState.type === "success" ? "status" : "alert"}
+              className={cx(
+                "mb-5 rounded-3xl border p-4 text-sm font-bold leading-6 shadow-sm",
+                submitState.type === "success"
+                  ? "border-green-100 bg-green-50 text-green-800"
+                  : "border-red-100 bg-red-50 text-red-700"
+              )}
+            >
+              <span className="flex items-center gap-2">
+                {submitState.type === "success" ? <CheckCircle2 aria-hidden="true" className="h-5 w-5" /> : null}
+                {submitState.type === "success" ? copy.contact.successTitle : copy.contact.error}
+              </span>
+              <span className="mt-1 block font-semibold">{submitState.message}</span>
+            </div>
+          ) : null}
           <div className="grid gap-4">
             <Input
               placeholder={copy.contact.placeholders.name}
               value={form.name}
               onChange={(value) => setForm((state) => ({ ...state, name: value }))}
+              required
             />
             <Input
-              placeholder={copy.contact.placeholders.phone}
-              value={form.phone}
-              onChange={(value) => setForm((state) => ({ ...state, phone: value }))}
+              type="email"
+              placeholder={copy.contact.placeholders.email}
+              value={form.email}
+              onChange={(value) => setForm((state) => ({ ...state, email: value }))}
             />
+            <CountrySelect
+              language={language}
+              value={form.countryCode}
+              label={copy.contact.placeholders.country}
+              searchPlaceholder={copy.contact.placeholders.searchCountry}
+              onChange={(value) => setForm((state) => ({ ...state, countryCode: value }))}
+            />
+            <div className="flex min-h-14 overflow-hidden rounded-2xl border border-slate-200 bg-white/80 transition focus-within:border-cyan-400 focus-within:ring-4 focus-within:ring-cyan-100">
+              <span className="inline-flex min-w-20 items-center justify-center border-r border-slate-200 bg-cyan-50 px-4 text-sm font-black text-sky-900">
+                {selectedCountry.dialCode}
+              </span>
+              <input
+                value={form.phone}
+                onChange={(event) => setForm((state) => ({ ...state, phone: event.target.value }))}
+                required
+                inputMode="tel"
+                autoComplete="tel-national"
+                className="min-w-0 flex-1 bg-transparent px-5 py-4 outline-none"
+                placeholder={copy.contact.placeholders.phone}
+              />
+            </div>
             <Input
               placeholder={copy.contact.placeholders.destination}
               value={form.destination}
@@ -1558,6 +1728,7 @@ function Contact({ copy }: { copy: SiteCopy }) {
             <select
               value={form.service}
               onChange={(event) => setForm((state) => ({ ...state, service: event.target.value }))}
+              required
               className="rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
             >
               {copy.contact.options.map((option, index) => (
@@ -1569,16 +1740,22 @@ function Contact({ copy }: { copy: SiteCopy }) {
             <textarea
               value={form.message}
               onChange={(event) => setForm((state) => ({ ...state, message: event.target.value }))}
+              required
               rows={5}
               className="rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
               placeholder={copy.contact.placeholders.message}
             />
             <button
               type="submit"
-              className="group mt-2 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-sky-600 to-cyan-400 px-7 py-4 font-black text-white shadow-2xl shadow-cyan-500/30 transition hover:scale-[1.02]"
+              disabled={submitting}
+              className="group mt-2 inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-sky-600 to-cyan-400 px-7 py-4 font-black text-white shadow-2xl shadow-cyan-500/30 transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {copy.contact.submit}
-              <Send aria-hidden="true" className="h-5 w-5 transition group-hover:translate-x-1" />
+              {submitting ? copy.contact.sending : copy.contact.submit}
+              {submitting ? (
+                <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send aria-hidden="true" className="h-5 w-5 transition group-hover:translate-x-1" />
+              )}
             </button>
           </div>
         </motion.form>
@@ -1587,18 +1764,117 @@ function Contact({ copy }: { copy: SiteCopy }) {
   );
 }
 
+function CountrySelect({
+  language,
+  value,
+  label,
+  searchPlaceholder,
+  onChange
+}: {
+  language: Language;
+  value: string;
+  label: string;
+  searchPlaceholder: string;
+  onChange: (countryCode: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const selectedCountry = getCountryByCode(value);
+  const normalizedQuery = query.trim().toLowerCase();
+  const filteredCountries = useMemo(
+    () =>
+      COUNTRY_OPTIONS.filter((country) => {
+        const searchable = `${country.nameFr} ${country.nameEn} ${country.code} ${country.dialCode}`.toLowerCase();
+        return searchable.includes(normalizedQuery);
+      }),
+    [normalizedQuery]
+  );
+
+  useEffect(() => {
+    function closeOnOutsideClick(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", closeOnOutsideClick);
+    return () => document.removeEventListener("mousedown", closeOnOutsideClick);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((state) => !state)}
+        className="flex min-h-14 w-full items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 text-left outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
+        aria-expanded={open}
+      >
+        <span>
+          <span className="block text-xs font-black uppercase tracking-[0.18em] text-cyan-600">{label}</span>
+          <span className="mt-1 block font-bold text-sky-950">
+            {getCountryLabel(selectedCountry, language)} · {selectedCountry.dialCode}
+          </span>
+        </span>
+        <ChevronDown aria-hidden="true" className={cx("h-5 w-5 shrink-0 text-cyan-600 transition", open && "rotate-180")} />
+      </button>
+
+      {open ? (
+        <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-40 overflow-hidden rounded-3xl border border-cyan-100 bg-white shadow-2xl">
+          <label className="flex items-center gap-3 border-b border-cyan-50 px-4 py-3">
+            <Search aria-hidden="true" className="h-4 w-4 text-cyan-600" />
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+              placeholder={searchPlaceholder}
+              autoFocus
+            />
+          </label>
+          <div className="max-h-72 overflow-y-auto p-2">
+            {filteredCountries.map((country) => (
+              <button
+                key={country.code}
+                type="button"
+                onClick={() => {
+                  onChange(country.code);
+                  setQuery("");
+                  setOpen(false);
+                }}
+                className={cx(
+                  "flex w-full items-center justify-between gap-4 rounded-2xl px-4 py-3 text-left text-sm transition hover:bg-cyan-50",
+                  country.code === selectedCountry.code && "bg-cyan-50"
+                )}
+              >
+                <span className="font-bold text-sky-950">{getCountryLabel(country, language)}</span>
+                <span className="font-black text-cyan-700">{country.dialCode}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function Input({
   value,
   onChange,
-  placeholder
+  placeholder,
+  type = "text",
+  required = false
 }: {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  type?: string;
+  required?: boolean;
 }) {
   return (
     <input
+      type={type}
       value={value}
+      required={required}
       onChange={(event) => onChange(event.target.value)}
       className="rounded-2xl border border-slate-200 bg-white/80 px-5 py-4 outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
       placeholder={placeholder}
@@ -1681,7 +1957,7 @@ export function JosTravelSite() {
       <Testimonials copy={copy} />
       <Process copy={copy} />
       <Faq copy={copy} />
-      <Contact copy={copy} />
+      <Contact copy={copy} language={language} />
       <Footer copy={copy} />
       <AiChatbot />
     </main>
