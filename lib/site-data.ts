@@ -8,10 +8,8 @@ import {
   Globe2,
   Headphones,
   HeartHandshake,
-  Home,
   LockKeyhole,
   MapPinned,
-  PackageCheck,
   ShieldCheck,
   Ticket,
   UsersRound,
@@ -120,54 +118,67 @@ export const trustMarkers = [
 
 export const services: ServiceItem[] = [
   {
-    title: "Tourisme",
-    copy: "Circuits culturels, aventures nature, écotourisme et escapades locales au Cameroun.",
-    icon: Compass
+    title: "Packages touristiques",
+    copy:
+      "Voyages loisirs, safaris et study tours. Le client envoie destination, dates et nombre de voyageurs ; JOS-Travel transmet un devis détaillé sous 24h incluant vols, hôtel, visa, transferts, visites guidées et safaris au Kenya, Tanzanie, Ouganda ou Afrique du Sud.",
+    icon: MapPinned,
+    image: media[8].src
   },
   {
-    title: "Billets & hôtels",
-    copy: "Réservation de billets d'avion, chambres, séjours et prestations liées à votre itinéraire.",
-    icon: Ticket
-  },
-  {
-    title: "Séjours & affaires",
-    copy: "Vacances, voyages d'affaires, retraites d'équipe et déplacements corporate maîtrisés.",
-    icon: BriefcaseBusiness
+    title: "Réservations d'hôtels",
+    copy:
+      "Réservation d'hôtels dans le monde entier pour affaires ou loisirs. Le client envoie les dates check-in/check-out et la ville ; JOS-Travel propose des options avec prix, petit-déjeuner et conditions d'annulation. 20% d'acompte confirme la réservation.",
+    icon: Ticket,
+    image: media[28].src
   },
   {
     title: "Location de véhicules",
-    copy: "Solutions de mobilité fiables pour vos courses, transferts, circuits ou événements.",
-    icon: Car
+    copy:
+      "Pick-up aéroport ou location en ville au Cameroun et dans les pays partenaires. Les devis précisent le type de véhicule, l'option chauffeur, l'assurance et le kilométrage. Réservation conseillée 48h à l'avance.",
+    icon: Car,
+    image: media[33].src
   },
   {
-    title: "Visites guidées",
-    copy: "Excursions, découverte des sites emblématiques et expériences locales accompagnées.",
-    icon: MapPinned
+    title: "Assurance voyage",
+    copy:
+      "Assurance couvrant urgences médicales, annulation, perte de bagages et rapatriement. Obligatoire pour Schengen et Dubai, recommandée pour tout voyage international. Prime selon destination, durée et âge.",
+    icon: ShieldCheck,
+    image: media[41].src
   },
   {
     title: "Visa & formalités",
-    copy: "Assistance administrative, constitution des dossiers et suivi jusqu'au départ.",
-    icon: FileCheck2
+    copy:
+      "Visas touristiques Chine, Dubai, Turquie, Schengen et autres destinations. Visas étudiants et bourses : préparation documentaire, rendez-vous ambassade et suivi de dossier. Frais et délais selon le pays.",
+    icon: FileCheck2,
+    image: media[3].src
   },
   {
-    title: "Événements & séminaires",
-    copy: "Organisation logistique pour groupes, entreprises, cérémonies et rencontres professionnelles.",
-    icon: UsersRound
+    title: "Événements & voyages de groupe",
+    copy:
+      "Retraites d'entreprise, événements familiaux et tours de groupe avec réservation de lieux, catering, transport et coordination des visites. Demande recommandée 30 jours à l'avance pour obtenir les meilleurs tarifs.",
+    icon: BriefcaseBusiness,
+    image: media[47].src
   },
   {
-    title: "Conseil personnalisé",
-    copy: "Recommandations adaptées à votre budget, votre rythme et votre style de voyage.",
-    icon: Headphones
+    title: "Partenariats tour-opérateurs",
+    copy:
+      "Opérateurs locaux licenciés pour safaris, city tours et assistance terrain 24/7. Le voyageur dispose d'un contact WhatsApp direct avec JOS-Travel et le guide local pendant le séjour.",
+    icon: UsersRound,
+    image: media[15].src
   },
   {
-    title: "Immobilier & achats",
-    copy: "Accompagnement dans les recherches, achats centralisés et demandes spécifiques.",
-    icon: Home
+    title: "Booking & paiement",
+    copy:
+      "Tourisme, safari et événements : 60% d'acompte pour confirmer. Hôtel, voiture et assurance : 20 à 50% selon fournisseur. Solde dû 20 jours avant départ. Paiement par Mobile Money, virement ou espèces au bureau de Douala.",
+    icon: WalletCards,
+    image: media[0].src
   },
   {
-    title: "Import / export",
-    copy: "Commerce général, services d'import-export et coordination de besoins transverses.",
-    icon: PackageCheck
+    title: "Support voyage",
+    copy:
+      "Itinéraire final, vouchers et contact WhatsApp support envoyés 7 jours avant le départ. Tous les devis sont valables 7 jours ; les prix changent selon la saison et la disponibilité.",
+    icon: Headphones,
+    image: media[44].src
   }
 ];
 
@@ -206,20 +217,24 @@ export const destinationGroups = [
 
 export const processSteps = [
   {
-    title: "Écoute",
-    copy: "Nous clarifions votre destination, vos dates, votre budget, vos attentes et vos contraintes."
+    title: "Consultation",
+    copy: "Nous clarifions la destination, les dates, le nombre de voyageurs, le budget, les attentes et les contraintes."
   },
   {
-    title: "Design du voyage",
-    copy: "L'équipe propose un itinéraire, sélectionne les meilleures options et affine chaque détail."
+    title: "Devis détaillé",
+    copy: "JOS-Travel prépare une proposition claire sous 24h quand les informations essentielles sont disponibles."
   },
   {
-    title: "Formalités",
-    copy: "Billets, hôtels, visa, transferts et documents sont coordonnés avec un suivi rigoureux."
+    title: "Confirmation",
+    copy: "La réservation est confirmée par l'acompte adapté : 60% pour tourisme, safari et événements ; 20 à 50% pour hôtel, voiture ou assurance."
   },
   {
-    title: "Accompagnement",
-    copy: "Vous restez accompagné avant, pendant et après le voyage, avec une équipe disponible."
+    title: "Préparation",
+    copy: "Le solde est réglé 20 jours avant départ, puis les vouchers, contacts et instructions sont transmis avant le voyage."
+  },
+  {
+    title: "Support",
+    copy: "Le voyageur reste accompagné par WhatsApp avant, pendant et après le séjour, avec un suivi humain et réactif."
   }
 ];
 
@@ -269,24 +284,24 @@ export const testimonials = [
 
 export const faqs = [
   {
-    question: "JOS-Travel accompagne-t-elle les voyages au Cameroun et à l'international ?",
+    question: "Combien de temps un devis JOS-Travel reste-t-il valable ?",
     answer:
-      "Oui. L'agence organise des circuits locaux, des séjours de vacances, des voyages d'affaires et des départs internationaux avec assistance sur les billets, hôtels et formalités."
+      "Chaque devis est valable 7 jours. Les prix peuvent évoluer selon la saison, la disponibilité des fournisseurs et les conditions des compagnies."
   },
   {
-    question: "Pouvez-vous aider pour les visas et documents administratifs ?",
+    question: "Quel acompte faut-il prévoir pour confirmer ?",
     answer:
-      "Oui. L'équipe accompagne la préparation des dossiers, vérifie les pièces nécessaires et assure un suivi clair jusqu'à la finalisation."
+      "Tourisme, safari et événements nécessitent généralement 60% d'acompte. Hôtel, location de voiture et assurance demandent 20 à 50% selon le fournisseur."
   },
   {
-    question: "Est-il possible de demander un voyage sur mesure ?",
+    question: "Quels moyens de paiement sont acceptés ?",
     answer:
-      "Oui. C'est le coeur de l'offre : dates, budget, style de voyage, niveau de confort et envies sont pris en compte pour créer une proposition adaptée."
+      "JOS-Travel accepte Mobile Money, virement bancaire et paiement en espèces au bureau de Douala."
   },
   {
-    question: "Comment contacter rapidement l'agence ?",
+    question: "Quand reçoit-on les documents de voyage ?",
     answer:
-      "Le plus direct est WhatsApp ou téléphone via les numéros affichés dans la section contact. Vous pouvez aussi écrire à jostravel2026@gmail.com."
+      "L'itinéraire final, les vouchers et le contact WhatsApp support sont envoyés 7 jours avant le départ."
   }
 ];
 
