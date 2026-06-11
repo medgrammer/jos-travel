@@ -2,6 +2,8 @@ import OpenAI from "openai";
 import type { Response, ResponseCreateParamsNonStreaming } from "openai/resources/responses/responses";
 import { NextResponse } from "next/server";
 import { buildAssistantInstructions } from "@/lib/platform/ai-context";
+import { buildWhatsAppUrl, type ChatMode } from "@/lib/platform/billing";
+import { brand } from "@/lib/site-data";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -26,6 +28,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Message vide." }, { status: 400 });
   }
 
+  const admin = createAdminClient();
+  const creditState = await getCreditState(admin);
+  const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
+
+  if (creditState.chatMode === "human") {
+    return NextResponse.json({
+      redirectToWhatsApp: true,
+      whatsappUrl: buildChatWhatsAppUrl(lastUserMessage?.content),
+      answer: "Je vous mets en relation avec un conseiller JOS-Travel sur WhatsApp."
+    });
+  }
+
+  if (creditState.configured && creditState.remainingCredits <= 0) {
+    return NextResponse.json(
+      {
+        redirectToWhatsApp: true,
+        whatsappUrl: buildChatWhatsAppUrl(lastUserMessage?.content),
+        error: "Notre équipe prend le relais sur WhatsApp."
+      },
+      { status: 402 }
+    );
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
@@ -34,15 +59,6 @@ export async function POST(request: Request) {
           "La discussion JOS-Travel est prête, mais la configuration serveur n'est pas encore terminée."
       },
       { status: 503 }
-    );
-  }
-
-  const admin = createAdminClient();
-  const creditState = await getCreditState(admin);
-  if (creditState.configured && creditState.remainingCredits <= 0) {
-    return NextResponse.json(
-      { error: "Le crédit de conversation est épuisé. Merci de le recharger dans l'espace admin." },
-      { status: 402 }
     );
   }
 
@@ -153,14 +169,15 @@ function formatOpenAIError(error: unknown) {
 
 async function getCreditState(admin: ReturnType<typeof createAdminClient>) {
   if (!admin) {
-    return { configured: false, remainingCredits: 0 };
+    return { configured: false, remainingCredits: 0, chatMode: "ai" as ChatMode };
   }
 
-  const { data } = await admin.from("ai_settings").select("remaining_credits").eq("id", true).maybeSingle();
+  const { data } = await admin.from("ai_settings").select("remaining_credits,chat_mode").eq("id", true).maybeSingle();
 
   return {
     configured: true,
-    remainingCredits: Number(data?.remaining_credits ?? 0)
+    remainingCredits: Number(data?.remaining_credits ?? 0),
+    chatMode: data?.chat_mode === "human" ? "human" : ("ai" as ChatMode)
   };
 }
 
@@ -178,4 +195,15 @@ async function consumeCredit(admin: ReturnType<typeof createAdminClient>, curren
     amount: -1,
     reason: "Conversation JOS-Travel"
   });
+}
+
+function buildChatWhatsAppUrl(lastNeed?: string) {
+  const text = [
+    `Bonjour ${brand.name}, je souhaite poursuivre cet echange sur WhatsApp avec un conseiller.`,
+    lastNeed ? `Mon besoin : ${lastNeed.slice(0, 240)}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  return buildWhatsAppUrl(text);
 }

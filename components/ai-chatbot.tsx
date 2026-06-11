@@ -9,6 +9,12 @@ type Message = {
   content: string;
 };
 
+type ChatModeState = {
+  chatMode: "ai" | "human";
+  availableCredits: boolean;
+  whatsappUrl: string;
+};
+
 const welcomeMessage: Message = {
   role: "assistant",
   content: `Bonjour, bienvenue chez ${brand.name}. Dites-moi votre destination, vos dates ou votre besoin, et je vous guide.`
@@ -42,6 +48,7 @@ export function AiChatbot() {
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [modeState, setModeState] = useState<ChatModeState | null>(null);
   const messagesViewportRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
   const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
@@ -51,6 +58,10 @@ export function AiChatbot() {
     Boolean(lastUserMessage) &&
     Boolean(latestAssistantMessage) &&
     shouldSuggestWhatsAppHandoff(latestAssistantMessage?.content ?? "");
+
+  useEffect(() => {
+    void loadChatMode();
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -74,6 +85,23 @@ export function AiChatbot() {
       window.clearTimeout(timeout);
     };
   }, [open, messages, loading]);
+
+  async function loadChatMode() {
+    const response = await fetch("/api/chat/mode", { cache: "no-store" }).catch(() => null);
+    const payload = response ? await response.json().catch(() => null) : null;
+    if (response?.ok && payload?.chatMode) {
+      setModeState(payload as ChatModeState);
+    }
+  }
+
+  function handleOpen() {
+    if (modeState?.chatMode === "human" || modeState?.availableCredits === false) {
+      window.open(modeState.whatsappUrl || buildWhatsAppHandoffUrl(), "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    setOpen(true);
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -99,15 +127,24 @@ export function AiChatbot() {
         ? payload.answer
         : payload?.error ?? `${brand.name} n'est pas disponible pour le moment.`;
 
+    if (payload?.redirectToWhatsApp && payload?.whatsappUrl) {
+      setMessages((state) => [...state, { role: "assistant", content: answer }]);
+      setLoading(false);
+      window.open(payload.whatsappUrl, "_blank", "noopener,noreferrer");
+      await loadChatMode();
+      return;
+    }
+
     setMessages((state) => [...state, { role: "assistant", content: answer }]);
     setLoading(false);
+    await loadChatMode();
   }
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         aria-label={`Ouvrir la discussion ${brand.name}`}
         className="fixed bottom-6 right-6 z-50 grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-green-400 to-cyan-500 text-white shadow-2xl shadow-green-500/40 transition hover:scale-110"
       >

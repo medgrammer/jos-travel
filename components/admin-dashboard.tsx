@@ -12,10 +12,13 @@ import {
   MessageCircle,
   MousePointerClick,
   RefreshCw,
+  Settings2,
   ShieldCheck,
   UsersRound,
   type LucideIcon
 } from "lucide-react";
+import { brand } from "@/lib/site-data";
+import type { BillingCycle, ChatMode } from "@/lib/platform/billing";
 
 type AdminStats = {
   userCount: number;
@@ -30,11 +33,15 @@ type AdminStats = {
     status: string;
     expires_at: string | null;
     notes: string | null;
+    billing_cycle?: BillingCycle | null;
+    amount_xaf?: number | null;
+    currency?: string | null;
     updated_at: string;
   } | null;
   aiSettings: {
     monthly_credits: number;
     remaining_credits: number;
+    chat_mode?: ChatMode;
     updated_at: string;
   } | null;
   recentUsers: Array<{
@@ -58,9 +65,12 @@ type AdminStats = {
 export function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [amount, setAmount] = useState("50");
-  const [reason, setReason] = useState("Recharge crédit agent IA");
+  const [creditPhone, setCreditPhone] = useState(defaultPaymentPhone());
+  const [subscriptionPhone, setSubscriptionPhone] = useState(defaultPaymentPhone());
+  const [subscriptionCycle, setSubscriptionCycle] = useState<BillingCycle>("monthly");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [chatSaving, setChatSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -87,22 +97,80 @@ export function AdminDashboard() {
     setSaving(true);
     setMessage(null);
 
-    const response = await fetch("/api/admin/credits", {
+    const response = await fetch("/api/payments/initiate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: Number(amount), reason })
+      body: JSON.stringify({ type: "ai_credit", credits: Number(amount), phone: creditPhone })
     });
 
     const payload = await response.json().catch(() => null);
     if (response.ok) {
-      setMessage("Crédit IA mis à jour.");
-      await loadStats();
+      setMessage("Page de paiement ouverte. Les crédits seront ajoutés après confirmation PawaPay.");
+      window.open(payload.trackingUrl, "_blank", "noopener,noreferrer");
     } else {
       setMessage(payload?.error ?? "Recharge impossible.");
     }
 
     setSaving(false);
   }
+
+  async function handleSubscriptionPayment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setMessage(null);
+
+    const response = await fetch("/api/payments/initiate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "subscription",
+        billingCycle: subscriptionCycle,
+        phone: subscriptionPhone
+      })
+    });
+
+    const payload = await response.json().catch(() => null);
+    if (response.ok) {
+      setMessage("Page de paiement ouverte. L'abonnement sera mis à jour après confirmation PawaPay.");
+      window.open(payload.trackingUrl, "_blank", "noopener,noreferrer");
+    } else {
+      setMessage(payload?.error ?? "Paiement d'abonnement impossible.");
+    }
+
+    setSaving(false);
+  }
+
+  async function handleChatModeUpdate(chatMode: ChatMode) {
+    setChatSaving(true);
+    setMessage(null);
+
+    const response = await fetch("/api/admin/chat-settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chatMode })
+    });
+
+    const payload = await response.json().catch(() => null);
+    if (response.ok) {
+      setStats((state) =>
+        state
+          ? {
+              ...state,
+              aiSettings: payload.aiSettings
+            }
+          : state
+      );
+      setMessage(chatMode === "ai" ? "Le chat est configure en mode IA." : "Le chat redirige maintenant vers WhatsApp.");
+    } else {
+      setMessage(payload?.error ?? "Configuration du chat impossible.");
+    }
+
+    setChatSaving(false);
+  }
+
+  const cloudIsActive = stats ? isSubscriptionActive(stats.cloudSubscription) : false;
+  const subscriptionActionLabel = cloudIsActive ? "Etendre l'abonnement" : "Renouveler l'abonnement";
+  const currentChatMode = stats?.aiSettings?.chat_mode ?? "ai";
 
   return (
     <section className="min-h-screen bg-jos-radial px-4 py-24 text-ocean-950">
@@ -115,7 +183,7 @@ export function AdminDashboard() {
             <p className="mt-6 text-sm font-semibold uppercase text-sun-600">Gestion interne</p>
             <h1 className="mt-2 font-display text-4xl font-semibold md:text-6xl">Plateforme JOS-Travel</h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
-              Vue admin pour suivre les comptes clients, les visites, les clics et le crédit de l&apos;agent IA OpenAI.
+              Vue admin pour suivre les comptes clients, les visites, les clics et le crédit de l&apos;agent IA.
             </p>
           </div>
           <button
@@ -169,15 +237,48 @@ export function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-4">
+              <div className="mt-5 grid gap-4 md:grid-cols-5">
                 <SubscriptionField label="Statut" value={stats.cloudSubscription?.status} />
                 <SubscriptionField label="Fournisseur" value={stats.cloudSubscription?.provider} />
                 <SubscriptionField label="Plan" value={stats.cloudSubscription?.plan_name} />
+                <SubscriptionField label="Cycle" value={formatBillingCycle(stats.cloudSubscription?.billing_cycle)} />
                 <SubscriptionField label="Dernière mise à jour" value={formatDate(stats.cloudSubscription?.updated_at)} />
               </div>
+
+              <form onSubmit={handleSubscriptionPayment} className="mt-5 grid gap-4 rounded-[8px] border border-cyan-100 bg-cyan-50/50 p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Cycle abonnement</span>
+                  <select
+                    value={subscriptionCycle}
+                    onChange={(event) => setSubscriptionCycle(event.target.value === "annual" ? "annual" : "monthly")}
+                    className="min-h-12 w-full rounded-[8px] border border-cyan-100 bg-white px-4 text-sm outline-none transition focus:border-ocean-500"
+                  >
+                    <option value="monthly">Mensuel</option>
+                    <option value="annual">Annuel</option>
+                  </select>
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro PawaPay</span>
+                  <input
+                    value={subscriptionPhone}
+                    onChange={(event) => setSubscriptionPhone(event.target.value)}
+                    placeholder="Ex. 671057243"
+                    className="min-h-12 w-full rounded-[8px] border border-cyan-100 bg-white px-4 text-sm outline-none transition focus:border-ocean-500"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-ocean-950 px-6 py-3 text-sm font-semibold text-white transition hover:bg-ocean-700 disabled:opacity-60"
+                >
+                  {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
+                  {subscriptionActionLabel}
+                </button>
+              </form>
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
+              <div className="grid gap-6">
               <form onSubmit={handleRecharge} className="rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-orange-50 text-sun-600">
@@ -189,7 +290,7 @@ export function AdminDashboard() {
                   </div>
                 </div>
                 <label className="mt-6 block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">Montant</span>
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Crédits à acheter</span>
                   <input
                     value={amount}
                     onChange={(event) => setAmount(event.target.value)}
@@ -198,10 +299,11 @@ export function AdminDashboard() {
                   />
                 </label>
                 <label className="mt-4 block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">Motif</span>
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Numéro PawaPay</span>
                   <input
-                    value={reason}
-                    onChange={(event) => setReason(event.target.value)}
+                    value={creditPhone}
+                    onChange={(event) => setCreditPhone(event.target.value)}
+                    placeholder="Ex. 671057243"
                     className="min-h-12 w-full rounded-[8px] border border-cyan-100 bg-cyan-50/60 px-4 text-sm outline-none transition focus:border-ocean-500"
                   />
                 </label>
@@ -211,9 +313,38 @@ export function AdminDashboard() {
                   className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-sun-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sun-600 disabled:opacity-60"
                 >
                   {saving ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : null}
-                  Recharger
+                  Payer et recharger
                 </button>
               </form>
+
+              <div className="rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] bg-cyan-50 text-ocean-700">
+                    <Settings2 aria-hidden="true" className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h2 className="font-bold text-ocean-950">Configuration du chat</h2>
+                    <p className="text-sm text-slate-500">Choisissez comment le bouton de discussion doit répondre aux visiteurs.</p>
+                  </div>
+                </div>
+                <div className="mt-5 grid gap-3">
+                  <ChatModeButton
+                    active={currentChatMode === "ai"}
+                    disabled={chatSaving}
+                    title="IA"
+                    copy="Ouvre la discussion JOS-Travel. La conversation est gérée automatiquement tant que le crédit est disponible."
+                    onClick={() => handleChatModeUpdate("ai")}
+                  />
+                  <ChatModeButton
+                    active={currentChatMode === "human"}
+                    disabled={chatSaving}
+                    title="Humain"
+                    copy="Redirige directement le visiteur vers WhatsApp pour échanger avec JOS-Travel."
+                    onClick={() => handleChatModeUpdate("human")}
+                  />
+                </div>
+              </div>
+              </div>
 
               <div className="rounded-[8px] border border-cyan-100 bg-white p-5 shadow-sm">
                 <h2 className="font-bold text-ocean-950">Derniers utilisateurs</h2>
@@ -290,6 +421,38 @@ function SubscriptionField({ label, value }: { label: string; value?: string | n
   );
 }
 
+function ChatModeButton({
+  active,
+  disabled,
+  title,
+  copy,
+  onClick
+}: {
+  active: boolean;
+  disabled: boolean;
+  title: string;
+  copy: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={
+        active
+          ? "rounded-[8px] border border-ocean-300 bg-ocean-950 p-4 text-left text-white transition disabled:opacity-60"
+          : "rounded-[8px] border border-cyan-100 bg-cyan-50/60 p-4 text-left text-ocean-950 transition hover:border-ocean-300 disabled:opacity-60"
+      }
+    >
+      <span className="block text-sm font-bold">{title}</span>
+      <span className={active ? "mt-1 block text-sm leading-6 text-cyan-50" : "mt-1 block text-sm leading-6 text-slate-600"}>
+        {copy}
+      </span>
+    </button>
+  );
+}
+
 function formatDate(value?: string | null) {
   if (!value) {
     return "À renseigner";
@@ -300,4 +463,29 @@ function formatDate(value?: string | null) {
     month: "long",
     year: "numeric"
   }).format(new Date(value));
+}
+
+function formatBillingCycle(value?: BillingCycle | null) {
+  if (value === "annual") {
+    return "Annuel";
+  }
+
+  if (value === "monthly") {
+    return "Mensuel";
+  }
+
+  return null;
+}
+
+function isSubscriptionActive(value: AdminStats["cloudSubscription"]) {
+  if (!value || value.status?.toLowerCase() !== "active" || !value.expires_at) {
+    return false;
+  }
+
+  const expiresAt = new Date(`${value.expires_at}T23:59:59`);
+  return Number.isFinite(expiresAt.getTime()) && expiresAt.getTime() >= Date.now();
+}
+
+function defaultPaymentPhone() {
+  return brand.whatsapp.replace(/^237/, "");
 }
