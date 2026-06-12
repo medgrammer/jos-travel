@@ -184,7 +184,6 @@ export function AdminDashboard() {
 
   async function handleRecharge(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const paymentWindow = window.open("about:blank", "_blank");
     setSaving(true);
     setMessage(null);
 
@@ -196,10 +195,9 @@ export function AdminDashboard() {
 
     const payload = await response.json().catch(() => null);
     if (response.ok) {
-      setMessage("Page PawaPay ouverte. Les crédits seront ajoutés après confirmation.");
-      openPaymentDestination(payload, paymentWindow);
+      setMessage("Page interne de paiement ouverte. Les crédits seront ajoutés après confirmation.");
+      openPaymentDestination(payload);
     } else {
-      paymentWindow?.close();
       setMessage(formatPaymentError(payload?.error ?? "Recharge impossible."));
     }
 
@@ -208,7 +206,6 @@ export function AdminDashboard() {
 
   async function handleSubscriptionPayment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const paymentWindow = window.open("about:blank", "_blank");
     setSaving(true);
     setMessage(null);
 
@@ -224,10 +221,9 @@ export function AdminDashboard() {
 
     const payload = await response.json().catch(() => null);
     if (response.ok) {
-      setMessage("Page PawaPay ouverte. L'abonnement sera mis à jour après confirmation.");
-      openPaymentDestination(payload, paymentWindow);
+      setMessage("Page interne de paiement ouverte. L'abonnement sera mis à jour après confirmation.");
+      openPaymentDestination(payload);
     } else {
-      paymentWindow?.close();
       setMessage(formatPaymentError(payload?.error ?? "Paiement d'abonnement impossible."));
     }
 
@@ -1001,17 +997,10 @@ function defaultPaymentPhone() {
   return brand.whatsapp.replace(/^237/, "");
 }
 
-function openPaymentDestination(payload: { paymentUrl?: string; trackingUrl?: string } | null, paymentWindow: Window | null) {
-  const targetUrl = payload?.paymentUrl || payload?.trackingUrl;
+function openPaymentDestination(payload: { trackingUrl?: string } | null) {
+  const targetUrl = payload?.trackingUrl;
 
   if (!targetUrl) {
-    paymentWindow?.close();
-    return;
-  }
-
-  if (paymentWindow && !paymentWindow.closed) {
-    paymentWindow.opener = null;
-    paymentWindow.location.href = targetUrl;
     return;
   }
 
