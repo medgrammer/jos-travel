@@ -71,10 +71,12 @@ export async function POST(request: Request) {
     const response = await createTravelResponse(client, messages);
 
     const answer = response.output_text?.trim() || "Je suis là. Pouvez-vous préciser votre besoin de voyage ?";
+    const whatsappHandoff = buildWhatsAppHandoff(messages);
     await consumeCredit(admin, usageRule, conversationId, await getAuthenticatedUserId());
 
     return NextResponse.json({
       answer,
+      whatsappHandoff,
       remainingCredits:
         creditState.configured && creditState.remainingCredits > 0
           ? Math.max(0, creditState.remainingCredits - usageRule.credits)
@@ -266,7 +268,19 @@ async function consumeCredit(
   });
 }
 
-function buildChatWhatsAppUrl(lastNeed?: string) {
+function buildWhatsAppHandoff(messages: ChatMessage[]) {
+  if (!shouldOfferWhatsAppHandoff(messages)) {
+    return null;
+  }
+
+  return {
+    label: "Continuer avec un conseiller WhatsApp",
+    url: buildChatWhatsAppUrl(messages)
+  };
+}
+
+function buildChatWhatsAppUrl(source?: string | ChatMessage[]) {
+  const lastNeed = Array.isArray(source) ? summarizeLeadNeed(source) : source;
   const text = [
     `Bonjour ${brand.name}, je souhaite poursuivre cet echange sur WhatsApp avec un conseiller.`,
     lastNeed ? `Mon besoin : ${lastNeed.slice(0, 240)}` : ""
@@ -276,6 +290,199 @@ function buildChatWhatsAppUrl(lastNeed?: string) {
 
   return buildWhatsAppUrl(text);
 }
+
+function shouldOfferWhatsAppHandoff(messages: ChatMessage[]) {
+  const userMessages = messages.filter((message) => message.role === "user").map((message) => message.content);
+  const latestUserMessage = userMessages.at(-1) ?? "";
+  const fullNeed = normalizeForLeadSearch(userMessages.join("\n"));
+  const latestNeed = normalizeForLeadSearch(latestUserMessage);
+
+  const qualification = {
+    service: hasAny(fullNeed, serviceSignals),
+    destination:
+      hasAny(fullNeed, destinationSignals) || /\b(?:a|au|aux|en|pour|vers)\s+[a-z][a-z' -]{2,}/.test(fullNeed),
+    dates: hasAny(fullNeed, dateSignals) || /\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b/.test(fullNeed),
+    travelers:
+      hasAny(fullNeed, travelerSignals) ||
+      /\b\d+\s*(personnes?|voyageurs?|adultes?|enfants?|etudiants?|clients?|places?)\b/.test(fullNeed),
+    budgetOrContact: hasAny(fullNeed, budgetOrContactSignals) || /(?:\+?\d[\d\s().-]{6,})|@/.test(fullNeed),
+    details: latestUserMessage.length > 120 || userMessages.length >= 3
+  };
+
+  const score = Object.values(qualification).filter(Boolean).length;
+  const explicitHandoff = hasAny(latestNeed, handoffSignals);
+  const documentService = hasAny(fullNeed, ["visa", "bourse", "bourses", "scholarship", "etude", "etudes"]);
+
+  if (explicitHandoff && qualification.service && score >= 3) {
+    return true;
+  }
+
+  if (documentService) {
+    return (
+      qualification.service &&
+      qualification.destination &&
+      (qualification.dates || qualification.budgetOrContact || qualification.details) &&
+      score >= 4
+    );
+  }
+
+  return qualification.service && score >= 5;
+}
+
+function summarizeLeadNeed(messages: ChatMessage[]) {
+  return messages
+    .filter((message) => message.role === "user")
+    .slice(-4)
+    .map((message) => message.content.trim())
+    .filter(Boolean)
+    .join(" / ")
+    .slice(0, 520);
+}
+
+function normalizeForLeadSearch(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[’]/g, "'");
+}
+
+function hasAny(value: string, signals: string[]) {
+  return signals.some((signal) => value.includes(signal));
+}
+
+const handoffSignals = [
+  "whatsapp",
+  "conseiller",
+  "conseillere",
+  "humain",
+  "appeler",
+  "appel",
+  "contact",
+  "contacter",
+  "rendez-vous",
+  "rendez vous",
+  "finaliser",
+  "confirmer",
+  "reservation",
+  "reserver",
+  "payer",
+  "paiement",
+  "urgent",
+  "urgence"
+];
+
+const serviceSignals = [
+  "voyage",
+  "tourisme",
+  "circuit",
+  "sejour",
+  "safari",
+  "study tour",
+  "hotel",
+  "hebergement",
+  "voiture",
+  "vehicule",
+  "location",
+  "assurance",
+  "visa",
+  "bourse",
+  "bourses",
+  "scholarship",
+  "etude",
+  "etudes",
+  "chine",
+  "evenement",
+  "groupe",
+  "billet",
+  "vol",
+  "transfert"
+];
+
+const destinationSignals = [
+  "cameroun",
+  "douala",
+  "yaounde",
+  "kribi",
+  "limbe",
+  "bafoussam",
+  "chine",
+  "dubai",
+  "turquie",
+  "schengen",
+  "france",
+  "paris",
+  "kenya",
+  "tanzanie",
+  "ouganda",
+  "uganda",
+  "afrique du sud",
+  "south africa",
+  "maldives",
+  "europe",
+  "canada",
+  "usa",
+  "italie",
+  "espagne",
+  "allemagne"
+];
+
+const dateSignals = [
+  "aujourd'hui",
+  "demain",
+  "cette semaine",
+  "semaine prochaine",
+  "mois prochain",
+  "janvier",
+  "fevrier",
+  "mars",
+  "avril",
+  "mai",
+  "juin",
+  "juillet",
+  "aout",
+  "septembre",
+  "octobre",
+  "novembre",
+  "decembre",
+  "week-end",
+  "weekend",
+  "depart",
+  "arrivee",
+  "check-in",
+  "check-out"
+];
+
+const travelerSignals = [
+  "seul",
+  "couple",
+  "famille",
+  "groupe",
+  "personne",
+  "personnes",
+  "voyageur",
+  "voyageurs",
+  "etudiant",
+  "etudiants"
+];
+
+const budgetOrContactSignals = [
+  "budget",
+  "prix",
+  "tarif",
+  "devis",
+  "cout",
+  "coût",
+  "fcfa",
+  "xaf",
+  "$",
+  "€",
+  "numero",
+  "telephone",
+  "email",
+  "mail",
+  "whatsapp"
+];
 
 function defaultRules() {
   return {

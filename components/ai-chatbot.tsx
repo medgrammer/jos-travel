@@ -7,6 +7,8 @@ import { brand } from "@/lib/site-data";
 type Message = {
   role: "user" | "assistant";
   content: string;
+  whatsappUrl?: string;
+  whatsappLabel?: string;
 };
 
 type ChatModeState = {
@@ -20,29 +22,6 @@ const welcomeMessage: Message = {
   content: `Bonjour, bienvenue chez ${brand.name}. Dites-moi votre destination, vos dates ou votre besoin, et je vous guide.`
 };
 
-const handoffKeywords = [
-  "whatsapp",
-  "conseiller",
-  "réserver",
-  "réservation",
-  "devis",
-  "appel",
-  "contacter",
-  "visa",
-  "billet",
-  "prix",
-  "disponibilité",
-  "documents",
-  "bourse",
-  "bourses",
-  "études",
-  "chine",
-  "dossier",
-  "candidature",
-  "inscription",
-  "pas disponible"
-];
-
 export function AiChatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([welcomeMessage]);
@@ -52,13 +31,6 @@ export function AiChatbot() {
   const messagesViewportRef = useRef<HTMLDivElement>(null);
   const latestMessageRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef(createConversationId());
-  const lastUserMessage = [...messages].reverse().find((message) => message.role === "user");
-  const latestAssistantMessage = [...messages].reverse().find((message) => message.role === "assistant");
-  const showWhatsAppHandoff =
-    !loading &&
-    Boolean(lastUserMessage) &&
-    Boolean(latestAssistantMessage) &&
-    shouldSuggestWhatsAppHandoff(latestAssistantMessage?.content ?? "");
 
   useEffect(() => {
     void loadChatMode();
@@ -129,14 +101,29 @@ export function AiChatbot() {
         : payload?.error ?? `${brand.name} n'est pas disponible pour le moment.`;
 
     if (payload?.redirectToWhatsApp && payload?.whatsappUrl) {
-      setMessages((state) => [...state, { role: "assistant", content: answer }]);
+      setMessages((state) => [
+        ...state,
+        {
+          role: "assistant",
+          content: answer,
+          whatsappUrl: payload.whatsappUrl,
+          whatsappLabel: "Continuer avec un conseiller WhatsApp"
+        }
+      ]);
       setLoading(false);
-      window.open(payload.whatsappUrl, "_blank", "noopener,noreferrer");
       await loadChatMode();
       return;
     }
 
-    setMessages((state) => [...state, { role: "assistant", content: answer }]);
+    setMessages((state) => [
+      ...state,
+      {
+        role: "assistant",
+        content: answer,
+        whatsappUrl: payload?.whatsappHandoff?.url,
+        whatsappLabel: payload?.whatsappHandoff?.label
+      }
+    ]);
     setLoading(false);
     await loadChatMode();
   }
@@ -180,15 +167,34 @@ export function AiChatbot() {
                   key={`${message.role}-${index}`}
                   className={message.role === "user" ? "flex justify-end" : "flex justify-start"}
                 >
-                  <p
+                  <div
                     className={
                       message.role === "user"
-                        ? "max-w-[82%] rounded-[8px] bg-ocean-950 px-4 py-3 text-sm leading-6 text-white"
-                        : "max-w-[86%] rounded-[8px] border border-cyan-100 bg-white px-4 py-3 text-sm leading-6 text-slate-700 shadow-sm"
+                        ? "flex max-w-[82%] flex-col items-end gap-2"
+                        : "flex max-w-[86%] flex-col items-start gap-2"
                     }
                   >
-                    {message.content}
-                  </p>
+                    <p
+                      className={
+                        message.role === "user"
+                          ? "w-fit rounded-[8px] bg-ocean-950 px-4 py-3 text-sm leading-6 text-white"
+                          : "w-fit rounded-[8px] border border-cyan-100 bg-white px-4 py-3 text-sm leading-6 text-slate-700 shadow-sm"
+                      }
+                    >
+                      {message.content}
+                    </p>
+                    {message.role === "assistant" && message.whatsappUrl ? (
+                      <a
+                        href={message.whatsappUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-cyan-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-500/25 transition hover:-translate-y-0.5 hover:shadow-xl"
+                      >
+                        <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
+                        {message.whatsappLabel ?? "Continuer avec un conseiller WhatsApp"}
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               ))}
 
@@ -201,19 +207,6 @@ export function AiChatbot() {
                 </div>
               ) : null}
 
-              {showWhatsAppHandoff ? (
-                <div className="flex justify-start">
-                  <a
-                    href={buildWhatsAppHandoffUrl(lastUserMessage?.content)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex max-w-[86%] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-cyan-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-green-500/25 transition hover:-translate-y-0.5 hover:shadow-xl"
-                  >
-                    <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
-                    Discuter avec un conseiller sur WhatsApp
-                  </a>
-                </div>
-              ) : null}
               <div ref={latestMessageRef} aria-hidden="true" />
             </div>
 
@@ -248,12 +241,6 @@ function buildWhatsAppHandoffUrl(lastNeed?: string) {
     .join("\n\n");
 
   return `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(text)}`;
-}
-
-function shouldSuggestWhatsAppHandoff(content: string) {
-  const normalized = content.toLowerCase();
-
-  return handoffKeywords.some((keyword) => normalized.includes(keyword));
 }
 
 function createConversationId() {
