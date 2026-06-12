@@ -19,6 +19,17 @@ export type PawaPayDepositStatus = {
   raw: Record<string, unknown>;
 };
 
+export class PawaPayApiError extends Error {
+  constructor(
+    message: string,
+    public readonly raw: Record<string, unknown>,
+    public readonly statusCode?: number
+  ) {
+    super(message);
+    this.name = "PawaPayApiError";
+  }
+}
+
 const COMPLETED_STATUS = "COMPLETED";
 
 export function isPawaPayCompleted(status?: string | null) {
@@ -36,7 +47,7 @@ export async function createPawaPayPaymentPage(payload: PawaPayPaymentPagePayloa
     body: JSON.stringify({
       depositId: payload.depositId,
       returnUrl: payload.returnUrl,
-      customerMessage: "JOS-Travel",
+      customerMessage: getCustomerMessage(),
       amountDetails: {
         amount: String(payload.amountXaf),
         currency: process.env.PAWAPAY_CURRENCY ?? "XAF"
@@ -44,19 +55,23 @@ export async function createPawaPayPaymentPage(payload: PawaPayPaymentPagePayloa
       phoneNumber: payload.phoneNumber ? normalizePhoneNumber(payload.phoneNumber) : undefined,
       language: "FR",
       country: process.env.PAWAPAY_COUNTRY ?? "CMR",
-      reason: payload.reason.slice(0, 120),
+      reason: normalizeReason(payload.reason),
       metadata: payload.metadata ?? []
     })
   });
 
-  const raw = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  const raw = await readJsonResponse(response);
   if (!response.ok) {
-    throw new Error(readPawaPayError(raw) || "PawaPay n'a pas accepte la demande de paiement.");
+    throw new PawaPayApiError(
+      readPawaPayError(raw) || "PawaPay n'a pas accepte la demande de paiement.",
+      raw,
+      response.status
+    );
   }
 
   const redirectUrl = extractRedirectUrl(raw);
   if (!redirectUrl) {
-    throw new Error("PawaPay n'a pas renvoye de lien de paiement.");
+    throw new PawaPayApiError(readPawaPayError(raw) || "PawaPay n'a pas renvoye de lien de paiement.", raw, response.status);
   }
 
   return { redirectUrl, raw };
@@ -69,9 +84,9 @@ export async function getPawaPayDepositStatus(depositId: string): Promise<PawaPa
     cache: "no-store"
   });
 
-  const raw = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+  const raw = await readJsonResponse(response);
   if (!response.ok) {
-    throw new Error(readPawaPayError(raw) || "Statut PawaPay indisponible.");
+    throw new PawaPayApiError(readPawaPayError(raw) || "Statut PawaPay indisponible.", raw, response.status);
   }
 
   const data = isRecord(raw.data) ? raw.data : raw;
@@ -110,6 +125,22 @@ function normalizePhoneNumber(value: string) {
   return digits;
 }
 
+function getCustomerMessage() {
+  const configured = process.env.PAWAPAY_CUSTOMER_MESSAGE ?? "JOS Travel";
+  const cleaned = configured.replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+
+  if (cleaned.length >= 4) {
+    return cleaned.slice(0, 22);
+  }
+
+  return "JOS Travel";
+}
+
+function normalizeReason(value: string) {
+  const cleaned = value.replace(/\s+/g, " ").trim();
+  return (cleaned || "Paiement JOS Travel").slice(0, 50);
+}
+
 function extractRedirectUrl(raw: Record<string, unknown>) {
   const data = isRecord(raw.data) ? raw.data : raw;
   const value = data.redirectUrl ?? data.redirectURL ?? raw.redirectUrl ?? raw.redirectURL;
@@ -117,8 +148,57 @@ function extractRedirectUrl(raw: Record<string, unknown>) {
 }
 
 function readPawaPayError(raw: Record<string, unknown>) {
-  const message = raw.message ?? raw.error ?? raw.details;
-  return typeof message === "string" ? message : "";
+  const failureReason = isRecord(raw.failureReason) ? raw.failureReason : null;
+  const data = isRecord(raw.data) ? raw.data : null;
+  const dataFailureReason = data && isRecord(data.failureReason) ? data.failureReason : null;
+  const error = isRecord(raw.error) ? raw.error : null;
+  const errors = Array.isArray(raw.errors) ? raw.errors : [];
+
+  const candidates = [
+    raw.message,
+    raw.error,
+    raw.errorMessage,
+    raw.details,
+    raw.description,
+    failureReason?.failureMessage,
+    failureReason?.failureCode,
+    dataFailureReason?.failureMessage,
+    dataFailureReason?.failureCode,
+    error?.message,
+    error?.code
+  ];
+
+  const message = candidates.find((candidate) => typeof candidate === "string" && candidate.trim());
+  if (typeof message === "string") {
+    return message;
+  }
+
+  const nestedMessages = errors
+    .map((item) => {
+      if (typeof item === "string") {
+        return item;
+      }
+      if (isRecord(item)) {
+        return [item.message, item.code, item.details].find((value) => typeof value === "string" && value.trim());
+      }
+      return null;
+    })
+    .filter((item): item is string => Boolean(item));
+
+  return nestedMessages.join(" | ");
+}
+
+async function readJsonResponse(response: Response) {
+  const text = await response.text().catch(() => "");
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return { body: text.slice(0, 1000) };
+  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

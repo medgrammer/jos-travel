@@ -8,7 +8,7 @@ import {
   type AiCreditPack,
   type PaymentType
 } from "@/lib/platform/billing";
-import { createPawaPayPaymentPage } from "@/lib/pawapay";
+import { createPawaPayPaymentPage, PawaPayApiError } from "@/lib/pawapay";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -96,8 +96,8 @@ export async function POST(request: Request) {
       phoneNumber: phone,
       reason:
         paymentType === "subscription"
-          ? `Abonnement JOS-Travel ${formatUsd(subscriptionQuote?.priceUsd ?? 0)}`
-          : `Achat ${pack?.name ?? "pack AI_CREDIT"}`,
+          ? "Abonnement JOS Travel"
+          : `Achat ${(pack?.name ?? "pack AI CREDIT").replace(/_/g, " ")}`,
       metadata: [
         { orderId: depositId },
         { type: paymentType },
@@ -125,9 +125,7 @@ export async function POST(request: Request) {
       .from("payment_transactions")
       .update({
         status: "failed_to_start",
-        provider_response: {
-          message: error instanceof Error ? error.message : "Erreur PawaPay"
-        }
+        provider_response: buildPawaPayErrorResponse(error)
       })
       .eq("id", payment.id);
 
@@ -136,6 +134,20 @@ export async function POST(request: Request) {
       { status: 502 }
     );
   }
+}
+
+function buildPawaPayErrorResponse(error: unknown) {
+  if (error instanceof PawaPayApiError) {
+    return {
+      message: error.message,
+      statusCode: error.statusCode ?? null,
+      raw: error.raw
+    };
+  }
+
+  return {
+    message: error instanceof Error ? error.message : "Erreur PawaPay"
+  };
 }
 
 function normalizePaymentType(value: unknown): PaymentType | null {
@@ -148,12 +160,6 @@ function normalizeBillingCycle(value: unknown): BillingCycle {
 
 function normalizePackId(value: unknown) {
   return typeof value === "string" ? value.slice(0, 64) : "starter";
-}
-
-function formatUsd(value: number) {
-  return `$${new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: Number.isInteger(value) ? 0 : 2
-  }).format(value)}`;
 }
 
 async function getAiCreditPack(
