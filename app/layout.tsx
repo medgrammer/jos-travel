@@ -2,14 +2,23 @@ import type { Metadata } from "next";
 import { SiteAnalytics } from "@/components/site-analytics";
 import "./globals.css";
 
+const siteTitle = "JOS-Travel | Agence de voyage et tourisme premium";
+const siteDescription =
+  "JOS-Travel organise vos voyages au Cameroun et à l'international : billets, visas, hôtels, séjours, bourses d'études, assurances, excursions et accompagnement 24h/24.";
+const previewImage = "/media/jos-link-preview-20260612.png";
+const siteUrl = "https://jostravel.site";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://jostravel.site"),
+  metadataBase: new URL(siteUrl),
+  applicationName: "JOS-Travel",
+  alternates: {
+    canonical: siteUrl
+  },
   title: {
-    default: "JOS-Travel | Agence de tourisme premium au Cameroun",
+    default: siteTitle,
     template: "%s | JOS-Travel"
   },
-  description:
-    "JOS-Travel accompagne particuliers et entreprises dans la création de voyages sur mesure, billets, visas, bourses d'études, hôtels, excursions et séjours au Cameroun comme à l'international.",
+  description: siteDescription,
   keywords: [
     "JOS-Travel",
     "agence de voyage Cameroun",
@@ -20,28 +29,32 @@ export const metadata: Metadata = {
     "séjours de vacances",
     "voyage d'affaires"
   ],
+  icons: {
+    icon: "/media/jos-logo.jpeg",
+    shortcut: "/media/jos-logo.jpeg",
+    apple: "/media/jos-logo.jpeg"
+  },
   openGraph: {
     type: "website",
     locale: "fr_CM",
-    url: "https://jostravel.site",
+    url: siteUrl,
     siteName: "JOS-Travel",
-    title: "JOS-Travel | Où chaque voyage devient une histoire inoubliable",
-    description:
-      "Agence agréée de 3e catégorie spécialisée dans les voyages sur mesure, l'assistance visa, les séjours, les excursions et les voyages d'affaires.",
+    title: "JOS-Travel | Chaque voyage devient une histoire inoubliable",
+    description: siteDescription,
     images: [
       {
-        url: "/media/jos-travel-02.jpeg",
-        width: 1809,
-        height: 2560,
-        alt: "Affiche officielle de JOS-Travel"
+        url: previewImage,
+        width: 1200,
+        height: 630,
+        alt: "JOS-Travel - Agence tourisme premium"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "JOS-Travel",
-    description: "Voyagez l'esprit libre, JOS-Travel s'occupe du reste.",
-    images: ["/media/jos-travel-02.jpeg"]
+    title: "JOS-Travel | Agence de voyage et tourisme premium",
+    description: siteDescription,
+    images: [previewImage]
   }
 };
 
