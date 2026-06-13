@@ -2,6 +2,7 @@ import {
   brand,
   destinationGroups,
   faqs,
+  featuredOffers,
   processSteps,
   reasons,
   scholarshipOffer,
@@ -23,6 +24,15 @@ export function buildJosTravelContext() {
     "",
     "Services:",
     ...services.map((service) => `- ${service.title}: ${service.copy}`),
+    "",
+    "Offres et événements à mettre en avant:",
+    ...featuredOffers.flatMap((offer) => [
+      `- ${offer.title}: ${offer.summary}`,
+      `  Informations clés: ${offer.facts.map((fact) => `${fact.label}: ${fact.value}`).join(" / ")}`,
+      `  Points importants: ${offer.details.join(" / ")}`,
+      ...(offer.requirements?.length ? [`  Documents ou exigences: ${offer.requirements.join(" / ")}`] : []),
+      ...(offer.benefits?.length ? [`  Avantages: ${offer.benefits.join(" / ")}`] : [])
+    ]),
     "",
     "Bourses d'études en Chine:",
     `- Offre: ${scholarshipOffer.hero}. ${scholarshipOffer.subtitle}`,

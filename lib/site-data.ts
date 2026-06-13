@@ -27,6 +27,24 @@ export type ServiceItem = {
   featured?: boolean;
 };
 
+export type FeaturedOffer = {
+  slug: string;
+  title: string;
+  shortTitle: string;
+  category: string;
+  summary: string;
+  flyer: string;
+  alt: string;
+  href: string;
+  badges: string[];
+  facts: Array<{ label: string; value: string }>;
+  details: string[];
+  requirements?: string[];
+  benefits?: string[];
+  destinations?: Array<{ country: string; items: string[] }>;
+  whatsappMessage: string;
+};
+
 export const brand = {
   name: "JOS-Travel",
   baseline: "Où chaque voyage devient une histoire inoubliable.",
@@ -100,6 +118,7 @@ export const scholarshipOffer = {
 };
 
 export const navItems = [
+  { label: "Offres", href: "#offres" },
   { label: "Services", href: "#services" },
   { label: "Bourses", href: "#bourses" },
   { label: "Destinations", href: "#destinations" },
@@ -127,6 +146,170 @@ export const trustMarkers = [
     label: "Voyages",
     value: "sur mesure",
     icon: Compass
+  }
+];
+
+export const featuredOffers: FeaturedOffer[] = [
+  {
+    slug: "vacances-yaounde-2026",
+    title: "Vacances Yaoundé avec JOS-Travel 2026",
+    shortTitle: "Vacances Yaoundé 2026",
+    category: "Événement enfants",
+    summary:
+      "Un programme de vacances encadré pour offrir aux enfants une aventure exceptionnelle, riche en découvertes, loisirs et nouvelles amitiés.",
+    flyer: "/media/jos-travel-vacances-yaounde-2026.jpeg",
+    alt: "Flyer Vacances Yaoundé avec JOS-Travel 2026",
+    href: "/offres/vacances-yaounde-2026",
+    badges: ["Découvre", "Explore", "Savoure"],
+    facts: [
+      { label: "Public", value: "Enfants de 5 à 18 ans" },
+      { label: "Dates", value: "Du 15 juin au 15 août 2026" },
+      { label: "Places", value: "Limitées" }
+    ],
+    details: [
+      "Vacances inoubliables dans un cadre sécurisé.",
+      "Encadrement par des animateurs qualifiés du secteur du tourisme.",
+      "Découvertes culturelles, excursions, visites et activités ludiques.",
+      "Ateliers éducatifs pour apprendre autrement pendant les vacances.",
+      "Moments de partage pour créer de nouvelles amitiés."
+    ],
+    benefits: [
+      "Découvertes culturelles",
+      "Excursions et visites",
+      "Jeux et activités ludiques",
+      "Ateliers éducatifs",
+      "Nouvelles amitiés",
+      "Encadrement professionnel"
+    ],
+    whatsappMessage:
+      "Bonjour JOS-Travel, je souhaite inscrire un enfant au programme Vacances Yaoundé 2026.\n\nMerci de m'envoyer les informations d'inscription, les modalités, le programme détaillé et les places disponibles."
+  },
+  {
+    slug: "travailleurs-saisonniers-royaume-uni",
+    title: "Royaume-Uni - Programme de recrutement de travailleurs saisonniers",
+    shortTitle: "Travailleurs saisonniers UK",
+    category: "Visa travail",
+    summary:
+      "Un accompagnement pour les candidats intéressés par des opportunités d'emploi saisonnier légal au Royaume-Uni.",
+    flyer: "/media/jos-travel-royaume-uni-travailleurs-saisonniers.jpeg",
+    alt: "Flyer Royaume-Uni programme de recrutement de travailleurs saisonniers",
+    href: "/offres/travailleurs-saisonniers-royaume-uni",
+    badges: ["Emploi légal", "Maximum 30 jours", "3 postes disponibles"],
+    facts: [
+      { label: "Destination", value: "Royaume-Uni" },
+      { label: "Délai", value: "Maximum 30 jours" },
+      { label: "Disponibilité", value: "3 postes disponibles" }
+    ],
+    details: [
+      "Opportunités d'emploi saisonnier légales au Royaume-Uni.",
+      "Option compte bloqué disponible.",
+      "Paiement possible après approbation du visa selon les conditions du dossier.",
+      "Les candidats sont invités à soumettre leurs documents dès que possible pour évaluation.",
+      "Vérification de l'éligibilité avant orientation vers la suite de la procédure."
+    ],
+    requirements: ["Passeport valide", "Photo d'identité récente", "CV / Resume à jour"],
+    benefits: [
+      "Opportunité d'emploi saisonnier légale",
+      "Traitement rapide",
+      "Assistance professionnelle pour votre dossier",
+      "Hébergement inclus",
+      "Billet d'avion inclus"
+    ],
+    whatsappMessage:
+      "Bonjour JOS-Travel, je souhaite des informations sur le programme de recrutement de travailleurs saisonniers au Royaume-Uni.\n\nMerci de m'indiquer les conditions, les documents à fournir et les prochaines étapes pour vérifier mon éligibilité."
+  },
+  {
+    slug: "visa-travail-touristique",
+    title: "Visa Travail & Visa Touristique",
+    shortTitle: "Visa Travail & Touristique",
+    category: "Accompagnement visa",
+    summary:
+      "Des solutions pour travailler ou visiter l'étranger avec procédures rapides, dossiers sécurisés et assistance jusqu'à destination.",
+    flyer: "/media/jos-travel-visa-travail-touristique.jpeg",
+    alt: "Flyer Visa Travail et Visa Touristique JOS-Travel",
+    href: "/offres/visa-travail-touristique",
+    badges: ["Procédures rapides", "Accompagnement complet", "Dossiers sécurisés"],
+    facts: [
+      { label: "Type", value: "Visa travail et touristique" },
+      { label: "Support", value: "Assistance jusqu'à destination" },
+      { label: "Offres", value: "Logement, nourriture, compte bloqué selon pays" }
+    ],
+    details: [
+      "Accompagnement complet pour travailler ou visiter l'étranger.",
+      "Dossiers sécurisés et suivi professionnel.",
+      "Destinations proposées avec conditions spécifiques selon les pays.",
+      "Les offres peuvent inclure logement, nourriture, sécurité financière et assistance jusqu'à destination."
+    ],
+    benefits: [
+      "Procédures rapides",
+      "Accompagnement complet",
+      "Dossiers sécurisés",
+      "Destinations garanties",
+      "Logement inclus selon destination",
+      "Nourriture assurée selon destination",
+      "Sécurité financière avec compte bloqué selon dossier",
+      "Assistance jusqu'à destination"
+    ],
+    destinations: [
+      {
+        country: "Malaisie",
+        items: ["Procédure : 2 semaines max", "Logement + nourriture + transport", "Compte bloqué"]
+      },
+      {
+        country: "Île Maurice",
+        items: ["Procédure : 1 semaine", "Logement + emploi garanti", "Compte bloqué"]
+      },
+      {
+        country: "Turquie",
+        items: ["Procédure : 1 semaine", "Logement + emploi garanti", "Compte bloqué"]
+      },
+      {
+        country: "Dubaï",
+        items: ["Procédure : 2 semaines", "Contrat de travail", "Billet d'avion inclus", "Compte bloqué"]
+      },
+      {
+        country: "Portugal",
+        items: ["Logement + nourriture", "Compte bloqué sur 3 mois"]
+      },
+      {
+        country: "Italie",
+        items: ["Logement + nourriture", "Compte bloqué"]
+      },
+      {
+        country: "Pays-Bas",
+        items: ["Logement + nourriture"]
+      },
+      {
+        country: "Afrique du Sud",
+        items: ["Procédure : 2 semaines", "Compte bloqué"]
+      },
+      {
+        country: "Serbie",
+        items: ["Voyage à crédit", "Logement + emploi possible", "Compte bloqué"]
+      },
+      {
+        country: "Espagne",
+        items: ["Logement + travail", "Assistance complète"]
+      },
+      {
+        country: "Roumanie",
+        items: ["Logement + emploi garanti", "Assistance complète"]
+      },
+      {
+        country: "Luxembourg",
+        items: ["Opportunités de travail", "Accompagnement complet"]
+      },
+      {
+        country: "Moldova",
+        items: ["Procédure : 1 mois", "Compte bloqué"]
+      },
+      {
+        country: "Albanie",
+        items: ["Logement + nutrition", "Compte bloqué"]
+      }
+    ],
+    whatsappMessage:
+      "Bonjour JOS-Travel, je souhaite être accompagné pour un visa travail ou touristique.\n\nMerci de m'aider à choisir la destination adaptée et de m'envoyer les conditions, documents requis, délais et modalités."
   }
 ];
 

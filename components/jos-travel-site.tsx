@@ -37,6 +37,7 @@ import { AiChatbot } from "@/components/ai-chatbot";
 import { AuthWidget } from "@/components/auth-widget";
 import {
   brand,
+  featuredOffers,
   featuredGallery,
   media,
   scholarshipFlyers,
@@ -55,6 +56,7 @@ const siteCopy = {
     whatsapp: "WhatsApp",
     nav: [
       { label: "Accueil", href: "#accueil" },
+      { label: "Offres", href: "#offres" },
       { label: "Destinations", href: "#destinations" },
       { label: "Services", href: "#services" },
       { label: "Bourses", href: "#bourses" },
@@ -71,6 +73,14 @@ const siteCopy = {
       primaryCta: "Réserver maintenant",
       whatsappCta: "Parler sur WhatsApp",
       explore: "Explorer"
+    },
+    featured: {
+      eyebrow: "Offres & événements à la une",
+      title: "Des opportunités à saisir maintenant.",
+      copy:
+        "Vacances encadrées à Yaoundé, recrutement saisonnier au Royaume-Uni et solutions visa travail ou touristique : chaque rubrique reprend le flyer et les informations essentielles.",
+      cardCta: "Voir la rubrique",
+      whatsappCta: "Demander les détails"
     },
     destinations: {
       eyebrow: "Destinations",
@@ -343,6 +353,9 @@ const siteCopy = {
         "Assurance voyage",
         "Assistance visa",
         "Bourses d'études",
+        "Vacances Yaoundé 2026",
+        "Travailleurs saisonniers Royaume-Uni",
+        "Visa travail & touristique",
         "Événement / groupe"
       ],
       submit: "Envoyer ma demande",
@@ -372,6 +385,7 @@ const siteCopy = {
     whatsapp: "WhatsApp",
     nav: [
       { label: "Home", href: "#accueil" },
+      { label: "Offers", href: "#offres" },
       { label: "Destinations", href: "#destinations" },
       { label: "Services", href: "#services" },
       { label: "Scholarships", href: "#bourses" },
@@ -388,6 +402,14 @@ const siteCopy = {
       primaryCta: "Book now",
       whatsappCta: "Talk on WhatsApp",
       explore: "Explore"
+    },
+    featured: {
+      eyebrow: "Featured offers & events",
+      title: "Opportunities to act on now.",
+      copy:
+        "Supervised holidays in Yaounde, seasonal recruitment in the United Kingdom and work or tourist visa support: each page includes the flyer and key information.",
+      cardCta: "View details",
+      whatsappCta: "Ask for details"
     },
     destinations: {
       eyebrow: "Destinations",
@@ -660,6 +682,9 @@ const siteCopy = {
         "Trip insurance",
         "Visa services",
         "Study scholarships",
+        "Yaounde Holidays 2026",
+        "UK seasonal workers",
+        "Work & tourist visa",
         "Event / group travel"
       ],
       submit: "Send my request",
@@ -1127,6 +1152,91 @@ function Stat({ value, label, icon: Icon, dark = false }: { value: string; label
       <div className={cx("text-3xl font-black", dark ? "text-white" : "text-sky-900")}>{value}</div>
       <div className={cx("mt-1 text-sm font-medium", dark ? "text-sky-100" : "text-slate-600")}>{label}</div>
     </motion.div>
+  );
+}
+
+function FeaturedOffers({ copy }: { copy: SiteCopy }) {
+  return (
+    <section id="offres" className="relative overflow-hidden bg-white px-5 py-24">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.14),transparent_28%),radial-gradient(circle_at_78%_10%,rgba(251,146,60,0.12),transparent_25%)]" />
+      <div className="relative mx-auto max-w-7xl">
+        <SectionTitle
+          eyebrow={copy.featured.eyebrow}
+          title={copy.featured.title}
+          copy={copy.featured.copy}
+          align="center"
+        />
+
+        <div className="mt-14 grid gap-7 lg:grid-cols-3">
+          {featuredOffers.map((offer, index) => (
+            <motion.article
+              key={offer.slug}
+              initial={{ opacity: 0, y: 34 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ delay: index * 0.06, duration: 0.58, ease: [0.22, 1, 0.36, 1] }}
+              className="group flex h-full flex-col overflow-hidden rounded-[2.25rem] border border-cyan-100 bg-white shadow-2xl shadow-sky-900/8 transition hover:-translate-y-2 hover:shadow-cyan-500/20"
+            >
+              <a href={offer.href} className="relative block aspect-[4/5] overflow-hidden bg-cyan-50">
+                <Image
+                  src={offer.flyer}
+                  alt={offer.alt}
+                  fill
+                  sizes="(min-width: 1024px) 33vw, 100vw"
+                  className="object-cover transition duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-sky-950/86 via-sky-950/10 to-transparent" />
+                <div className="absolute left-5 top-5 rounded-full bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-sky-950 shadow-lg">
+                  {offer.category}
+                </div>
+                <div className="absolute bottom-5 left-5 right-5">
+                  <div className="flex flex-wrap gap-2">
+                    {offer.badges.slice(0, 3).map((badge) => (
+                      <span key={badge} className="rounded-full bg-white/18 px-3 py-1 text-xs font-black text-white backdrop-blur-xl">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+
+              <div className="flex flex-1 flex-col p-6">
+                <h3 className="text-2xl font-black leading-tight text-sky-950">{offer.shortTitle}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{offer.summary}</p>
+
+                <div className="mt-5 grid gap-3">
+                  {offer.facts.slice(0, 3).map((fact) => (
+                    <div key={`${offer.slug}-${fact.label}`} className="rounded-2xl bg-cyan-50/70 px-4 py-3">
+                      <div className="text-[0.68rem] font-black uppercase tracking-[0.18em] text-cyan-700">{fact.label}</div>
+                      <div className="mt-1 text-sm font-black text-sky-950">{fact.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-auto flex flex-col gap-3 pt-6 sm:flex-row">
+                  <a
+                    href={offer.href}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-sky-950 px-5 py-3 text-sm font-black text-white transition hover:scale-105"
+                  >
+                    {copy.featured.cardCta}
+                    <ArrowRight aria-hidden="true" className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={whatsappUrl(offer.whatsappMessage)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-400 to-sky-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-cyan-500/20 transition hover:scale-105"
+                  >
+                    <MessageCircle aria-hidden="true" className="h-4 w-4" />
+                    {copy.featured.whatsappCta}
+                  </a>
+                </div>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1945,6 +2055,7 @@ export function JosTravelSite() {
     <main className="min-h-screen overflow-hidden bg-[#F8F6F2] text-slate-900">
       <Header copy={copy} onLanguageToggle={toggleLanguage} />
       <Hero copy={copy} />
+      <FeaturedOffers copy={copy} />
       <Destinations copy={copy} />
       <Services copy={copy} />
       <Scholarships copy={copy} />
