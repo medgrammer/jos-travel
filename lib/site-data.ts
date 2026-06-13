@@ -33,7 +33,7 @@ export type FeaturedOffer = {
   shortTitle: string;
   category: string;
   summary: string;
-  flyer: string;
+  image: string;
   alt: string;
   href: string;
   badges: string[];
@@ -67,10 +67,10 @@ export const media = Array.from({ length: 65 }, (_, index) => {
   };
 });
 
-export const scholarshipFlyers = [
+export const scholarshipVisuals = [
   {
     src: "/media/jos-travel-bourses-chine-offre.jpeg",
-    alt: "Flyer JOS-Travel Master Scholarship in China Program 2026",
+    alt: "Visuel JOS-Travel Master Scholarship in China Program 2026",
     title: "Master Scholarship in China - Program 2026"
   }
 ];
@@ -157,8 +157,8 @@ export const featuredOffers: FeaturedOffer[] = [
     category: "Événement enfants",
     summary:
       "Un programme de vacances encadré pour offrir aux enfants une aventure exceptionnelle, riche en découvertes, loisirs et nouvelles amitiés.",
-    flyer: "/media/jos-travel-vacances-yaounde-2026.jpeg",
-    alt: "Flyer Vacances Yaoundé avec JOS-Travel 2026",
+    image: "/media/jos-travel-vacances-yaounde-2026.jpeg",
+    alt: "Visuel Vacances Yaoundé avec JOS-Travel 2026",
     href: "/offres/vacances-yaounde-2026",
     badges: ["Découvre", "Explore", "Savoure"],
     facts: [
@@ -191,8 +191,8 @@ export const featuredOffers: FeaturedOffer[] = [
     category: "Visa travail",
     summary:
       "Un accompagnement pour les candidats intéressés par des opportunités d'emploi saisonnier légal au Royaume-Uni.",
-    flyer: "/media/jos-travel-royaume-uni-travailleurs-saisonniers.jpeg",
-    alt: "Flyer Royaume-Uni programme de recrutement de travailleurs saisonniers",
+    image: "/media/jos-travel-royaume-uni-travailleurs-saisonniers.jpeg",
+    alt: "Visuel Royaume-Uni programme de recrutement de travailleurs saisonniers",
     href: "/offres/travailleurs-saisonniers-royaume-uni",
     badges: ["Emploi légal", "Maximum 30 jours", "3 postes disponibles"],
     facts: [
@@ -225,8 +225,8 @@ export const featuredOffers: FeaturedOffer[] = [
     category: "Accompagnement visa",
     summary:
       "Des solutions pour travailler ou visiter l'étranger avec procédures rapides, dossiers sécurisés et assistance jusqu'à destination.",
-    flyer: "/media/jos-travel-visa-travail-touristique.jpeg",
-    alt: "Flyer Visa Travail et Visa Touristique JOS-Travel",
+    image: "/media/jos-travel-visa-travail-touristique.jpeg",
+    alt: "Visuel Visa Travail et Visa Touristique JOS-Travel",
     href: "/offres/visa-travail-touristique",
     badges: ["Procédures rapides", "Accompagnement complet", "Dossiers sécurisés"],
     facts: [
@@ -318,8 +318,8 @@ export const featuredOffers: FeaturedOffer[] = [
     category: "Résidence internationale",
     summary:
       "Une solution de résidence légale de 2 ans à Dubaï, renouvelable, avec accompagnement JOS-Travel pour le dossier, le compte bloqué et le départ.",
-    flyer: "/media/jos-travel-residence-dubai.jpeg",
-    alt: "Flyer Résidence Dubaï avec JOS-Travel",
+    image: "/media/jos-travel-residence-dubai.jpeg",
+    alt: "Visuel Résidence Dubaï avec JOS-Travel",
     href: "/offres/residence-dubai",
     badges: ["Résidence 2 ans", "Renouvelable", "Procédure rapide"],
     facts: [
@@ -343,7 +343,7 @@ export const featuredOffers: FeaturedOffer[] = [
     ],
     destinations: [
       {
-        country: "Pays indiqués sur le flyer",
+        country: "Pays accessibles avec la résidence",
         items: [
           "France",
           "Luxembourg",

@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeft, CheckCircle2, FileText, GraduationCap, MessageCircle, Plane, ShieldCheck } from "lucide-react";
 import { PlatformLock } from "@/components/platform-lock";
-import { brand, scholarshipFlyers, scholarshipOffer } from "@/lib/site-data";
+import { brand, scholarshipOffer, scholarshipVisuals } from "@/lib/site-data";
 import { getPlatformSubscriptionStatus } from "@/lib/platform/subscription";
 
 export const metadata: Metadata = {
@@ -70,13 +70,13 @@ export default async function BoursesEtudesPage() {
               </a>
             </div>
 
-            <div className={scholarshipFlyers.length > 1 ? "grid gap-5 sm:grid-cols-2" : "mx-auto w-full max-w-md"}>
-              {scholarshipFlyers.map((flyer) => (
-                <figure key={flyer.src} className="overflow-hidden rounded-[2rem] border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur">
+            <div className={scholarshipVisuals.length > 1 ? "grid gap-5 sm:grid-cols-2" : "mx-auto w-full max-w-md"}>
+              {scholarshipVisuals.map((visual) => (
+                <figure key={visual.src} className="overflow-hidden rounded-[2rem] border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur">
                   <div className="relative aspect-[0.714] overflow-hidden rounded-[1.55rem] bg-white">
-                    <Image src={flyer.src} alt={flyer.alt} fill priority className="object-cover" sizes="(min-width: 1024px) 340px, 90vw" />
+                    <Image src={visual.src} alt={visual.alt} fill priority className="object-cover" sizes="(min-width: 1024px) 340px, 90vw" />
                   </div>
-                  <figcaption className="px-3 py-4 text-sm font-bold text-cyan-50">{flyer.title}</figcaption>
+                  <figcaption className="px-3 py-4 text-sm font-bold text-cyan-50">{visual.title}</figcaption>
                 </figure>
               ))}
             </div>
@@ -96,7 +96,7 @@ export default async function BoursesEtudesPage() {
             icon={ShieldCheck}
             title="Scholarship benefits"
             items={scholarshipOffer.coverage}
-            note="Avantages indiqués sur le flyer du programme."
+            note="Avantages principaux du programme."
           />
           <InfoPanel
             icon={Plane}
@@ -110,7 +110,7 @@ export default async function BoursesEtudesPage() {
       <section className="bg-white px-5 py-20">
         <div className="mx-auto max-w-7xl rounded-[2rem] border border-cyan-100 bg-cyan-50/40 p-8 shadow-xl shadow-sky-900/5 md:p-10">
           <p className="text-sm font-black uppercase tracking-[0.28em] text-cyan-600">Program available</p>
-          <h2 className="mt-4 font-display text-4xl font-black text-sky-950 md:text-5xl">Domaines de Master affichés sur le flyer.</h2>
+          <h2 className="mt-4 font-display text-4xl font-black text-sky-950 md:text-5xl">Domaines de Master disponibles.</h2>
           <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {scholarshipOffer.programs.map((program) => (
               <div key={program} className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm font-bold text-sky-950 shadow-lg shadow-sky-900/5">
@@ -133,7 +133,7 @@ export default async function BoursesEtudesPage() {
           <Checklist
             eyebrow="Dossiers à fournir"
             title="Pièces demandées"
-            description="Préparez les documents indiqués sur le flyer afin de faciliter l'ouverture et le suivi de votre dossier."
+            description="Préparez ces documents afin de faciliter l'ouverture et le suivi de votre dossier."
             items={scholarshipOffer.documents}
           />
         </div>

@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: OfferPageProps): Promise<Meta
       url: `https://jostravel.site${offer.href}`,
       images: [
         {
-          url: offer.flyer,
+          url: offer.image,
           width: 900,
           height: 1100,
           alt: offer.alt
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: OfferPageProps): Promise<Meta
       card: "summary_large_image",
       title: `${offer.title} | JOS-Travel`,
       description: offer.summary,
-      images: [offer.flyer]
+      images: [offer.image]
     }
   };
 }
@@ -159,7 +159,7 @@ export default async function OfferPage({ params }: OfferPageProps) {
             <div className="relative mx-auto w-full max-w-md overflow-hidden rounded-[2rem] border border-white/15 bg-white/10 p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
               <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-white">
                 <Image
-                  src={offer.flyer}
+                  src={offer.image}
                   alt={offer.alt}
                   fill
                   priority
@@ -194,8 +194,8 @@ export default async function OfferPage({ params }: OfferPageProps) {
               <Sparkles aria-hidden="true" className="h-7 w-7 text-orange-500" />
               <h2 className="mt-4 text-xl font-black text-sky-950">Action recommandée</h2>
               <p className="mt-3 text-sm font-semibold leading-6 text-slate-700">
-                Les informations de ces flyers peuvent évoluer selon la disponibilité, les délais et les conditions
-                des partenaires. Contactez JOS-Travel pour une validation personnalisée de votre dossier.
+                Les conditions de ces offres peuvent évoluer selon la disponibilité, les délais et les partenaires.
+                Contactez JOS-Travel pour une validation personnalisée de votre dossier.
               </p>
             </div>
           </aside>

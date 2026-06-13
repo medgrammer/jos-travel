@@ -40,8 +40,8 @@ import {
   featuredOffers,
   featuredGallery,
   media,
-  scholarshipFlyers,
   scholarshipOffer,
+  scholarshipVisuals,
 } from "@/lib/site-data";
 
 type IconType = LucideIcon;
@@ -78,7 +78,7 @@ const siteCopy = {
       eyebrow: "Offres & événements à la une",
       title: "Des opportunités à saisir maintenant.",
       copy:
-        "Vacances encadrées à Yaoundé, recrutement saisonnier au Royaume-Uni et solutions visa travail ou touristique : chaque rubrique reprend le flyer et les informations essentielles.",
+        "Vacances encadrées à Yaoundé, recrutement saisonnier au Royaume-Uni et solutions visa travail ou touristique.",
       cardCta: "Voir la rubrique",
       whatsappCta: "Demander les détails"
     },
@@ -408,7 +408,7 @@ const siteCopy = {
       eyebrow: "Featured offers & events",
       title: "Opportunities to act on now.",
       copy:
-        "Supervised holidays in Yaounde, seasonal recruitment in the United Kingdom and work or tourist visa support: each page includes the flyer and key information.",
+        "Supervised holidays in Yaounde, seasonal recruitment in the United Kingdom, and work or tourist visa support.",
       cardCta: "View details",
       whatsappCta: "Ask for details"
     },
@@ -1181,7 +1181,7 @@ function FeaturedOffers({ copy }: { copy: SiteCopy }) {
             >
               <a href={offer.href} className="relative block aspect-[4/5] overflow-hidden bg-cyan-50">
                 <Image
-                  src={offer.flyer}
+                  src={offer.image}
                   alt={offer.alt}
                   fill
                   sizes="(min-width: 1024px) 33vw, 100vw"
@@ -1394,15 +1394,15 @@ function Scholarships({ copy }: { copy: SiteCopy }) {
           <figure className="mx-auto max-w-[520px] overflow-hidden rounded-[3rem] border border-white bg-white p-2 shadow-2xl">
             <div className="relative aspect-[0.714] overflow-hidden rounded-[2.55rem] bg-white">
             <Image
-              src={scholarshipFlyers[0].src}
-              alt={scholarshipFlyers[0].alt}
+              src={scholarshipVisuals[0].src}
+              alt={scholarshipVisuals[0].alt}
               fill
               sizes="(min-width: 1024px) 520px, 90vw"
               className="object-cover"
             />
             </div>
             <figcaption className="px-5 py-4 text-sm font-black uppercase tracking-[0.16em] text-sky-900">
-              {scholarshipFlyers[0].title}
+              {scholarshipVisuals[0].title}
             </figcaption>
           </figure>
         </motion.div>
