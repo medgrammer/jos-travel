@@ -310,6 +310,59 @@ export const featuredOffers: FeaturedOffer[] = [
     ],
     whatsappMessage:
       "Bonjour JOS-Travel, je souhaite être accompagné pour un visa travail ou touristique.\n\nMerci de m'aider à choisir la destination adaptée et de m'envoyer les conditions, documents requis, délais et modalités."
+  },
+  {
+    slug: "residence-dubai",
+    title: "Résidence Dubaï",
+    shortTitle: "Résidence Dubaï",
+    category: "Résidence internationale",
+    summary:
+      "Une solution de résidence légale de 2 ans à Dubaï, renouvelable, avec accompagnement JOS-Travel pour le dossier, le compte bloqué et le départ.",
+    flyer: "/media/jos-travel-residence-dubai.jpeg",
+    alt: "Flyer Résidence Dubaï avec JOS-Travel",
+    href: "/offres/residence-dubai",
+    badges: ["Résidence 2 ans", "Renouvelable", "Procédure rapide"],
+    facts: [
+      { label: "Montant affiché", value: "2.700.000" },
+      { label: "Validité", value: "Résidence légale de 2 ans renouvelable" },
+      { label: "Destination", value: "Dubaï, Émirats arabes unis" }
+    ],
+    details: [
+      "Résidence légale de 2 ans à Dubaï, renouvelable.",
+      "Accompagnement dans la préparation et le suivi du dossier.",
+      "Ouverture d'un compte bancaire avec dépôt selon la procédure indiquée.",
+      "Réservation du billet d'avion pour Dubaï.",
+      "Étude et acceptation du dossier selon les conditions d'éligibilité."
+    ],
+    benefits: [
+      "Accès aux services essentiels : banque, santé, éducation, etc.",
+      "Opportunités d'affaires et d'investissement aux Émirats.",
+      "Facilité de voyager vers plusieurs pays sans visa.",
+      "Possibilité de parrainage de la famille.",
+      "Stabilité, sécurité et qualité de vie exceptionnelles."
+    ],
+    destinations: [
+      {
+        country: "Pays indiqués sur le flyer",
+        items: [
+          "France",
+          "Luxembourg",
+          "Suisse",
+          "Norvège",
+          "Lettonie",
+          "Malte",
+          "Portugal",
+          "Grèce",
+          "Espagne",
+          "Allemagne",
+          "Pays-Bas",
+          "Danemark",
+          "Et plus encore"
+        ]
+      }
+    ],
+    whatsappMessage:
+      "Bonjour JOS-Travel, je souhaite des informations sur l'offre Résidence Dubaï.\n\nMerci de m'envoyer les conditions, les documents nécessaires, le détail du montant affiché, les délais et les étapes de la procédure."
   }
 ];
 
