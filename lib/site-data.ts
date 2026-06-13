@@ -556,6 +556,24 @@ export const faqs = [
 ];
 
 export const featuredGallery = [
+  {
+    id: 66,
+    label: "Accueil JOS-Travel",
+    image: {
+      id: 66,
+      src: "/media/jos-travel-galerie-agence-01.jpeg",
+      alt: "Mur d'accueil JOS-Travel avec logo et services"
+    }
+  },
+  {
+    id: 67,
+    label: "Bureau JOS-Travel",
+    image: {
+      id: 67,
+      src: "/media/jos-travel-galerie-agence-02.jpeg",
+      alt: "Bureau JOS-Travel avec décoration murale de l'agence"
+    }
+  },
   { id: 2, label: "Identité officielle" },
   { id: 1, label: "Agence & accueil" },
   { id: 44, label: "Chutes du Cameroun" },
@@ -564,4 +582,7 @@ export const featuredGallery = [
   { id: 50, label: "Patrimoine" },
   { id: 42, label: "Confort en vol" },
   { id: 22, label: "Plage locale" }
-].map((item) => ({ ...item, image: media[item.id - 1] }));
+].map((item) => ({
+  ...item,
+  image: "image" in item && item.image ? item.image : media[item.id - 1]!
+}));
