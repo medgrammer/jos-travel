@@ -8,16 +8,16 @@ import { brand, scholarshipFlyers, scholarshipOffer } from "@/lib/site-data";
 import { getPlatformSubscriptionStatus } from "@/lib/platform/subscription";
 
 export const metadata: Metadata = {
-  title: "Bourses d'études en Chine",
+  title: "Master Scholarship in China Program 2026",
   description:
-    "Programme JOS-Travel pour les opportunités d'études en Chine avec bourse complète, accompagnement de dossier et suivi de procédure."
+    "Programme JOS-Travel Master Scholarship in China 2026 avec scolarité, dortoir, billet d'avion, assurance médicale, stipend et accompagnement de dossier."
 };
 
 export const dynamic = "force-dynamic";
 
 const whatsappMessage = [
-  "Bonjour JOS-Travel, je souhaite obtenir des informations sur le service Bourses d'études en Chine.",
-  "Je veux être accompagné pour vérifier mon éligibilité, préparer mon dossier et connaître les prochaines étapes."
+  "Bonjour JOS-Travel, je souhaite obtenir des informations sur le Master Scholarship in China Program 2026.",
+  "Je veux vérifier mon éligibilité, préparer mon dossier et connaître les prochaines étapes avant la date limite du 20/06/2026."
 ].join("\n\n");
 
 function whatsappUrl() {
@@ -70,10 +70,10 @@ export default async function BoursesEtudesPage() {
               </a>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className={scholarshipFlyers.length > 1 ? "grid gap-5 sm:grid-cols-2" : "mx-auto w-full max-w-md"}>
               {scholarshipFlyers.map((flyer) => (
                 <figure key={flyer.src} className="overflow-hidden rounded-[2rem] border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur">
-                  <div className="relative aspect-[0.7] overflow-hidden rounded-[1.55rem] bg-white">
+                  <div className="relative aspect-[0.714] overflow-hidden rounded-[1.55rem] bg-white">
                     <Image src={flyer.src} alt={flyer.alt} fill priority className="object-cover" sizes="(min-width: 1024px) 340px, 90vw" />
                   </div>
                   <figcaption className="px-3 py-4 text-sm font-bold text-cyan-50">{flyer.title}</figcaption>
@@ -88,22 +88,37 @@ export default async function BoursesEtudesPage() {
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-3">
           <InfoPanel
             icon={GraduationCap}
-            title="Niveaux concernés"
+            title="Programme concerné"
             items={scholarshipOffer.levels}
-            note="Opportunités ouvertes aux étudiants souhaitant poursuivre leurs études en Chine."
+            note="Programme Master 2026 pour les profils étudiants souhaitant poursuivre leurs études en Chine."
           />
           <InfoPanel
             icon={ShieldCheck}
-            title="Prise en charge gratuite"
+            title="Scholarship benefits"
             items={scholarshipOffer.coverage}
-            note="Selon les conditions du programme affichées sur les flyers."
+            note="Avantages indiqués sur le flyer du programme."
           />
           <InfoPanel
             icon={Plane}
-            title="Promotion"
-            items={["Occasion exceptionnelle", "Offres promotionnelles", scholarshipOffer.deadline]}
-            note={scholarshipOffer.support}
+            title="Programmes disponibles"
+            items={scholarshipOffer.programs.slice(0, 6)}
+            note="La liste complète et l'éligibilité sont validées avec JOS-Travel selon votre profil."
           />
+        </div>
+      </section>
+
+      <section className="bg-white px-5 py-20">
+        <div className="mx-auto max-w-7xl rounded-[2rem] border border-cyan-100 bg-cyan-50/40 p-8 shadow-xl shadow-sky-900/5 md:p-10">
+          <p className="text-sm font-black uppercase tracking-[0.28em] text-cyan-600">Program available</p>
+          <h2 className="mt-4 font-display text-4xl font-black text-sky-950 md:text-5xl">Domaines de Master affichés sur le flyer.</h2>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {scholarshipOffer.programs.map((program) => (
+              <div key={program} className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 text-sm font-bold text-sky-950 shadow-lg shadow-sky-900/5">
+                <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-cyan-500" />
+                {program}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -132,7 +147,7 @@ export default async function BoursesEtudesPage() {
             <ContactLine label="Téléphones" value={scholarshipOffer.contacts.join(" / ")} />
             <ContactLine label="Email" value={scholarshipOffer.email} />
             <ContactLine label="Adresse" value={scholarshipOffer.address} />
-            <ContactLine label="Frais dossier" value={scholarshipOffer.fee.replace("Frais d'ouverture du dossier : ", "")} />
+            <ContactLine label="Stipend annuel" value={scholarshipOffer.fee.replace("Stipend : ", "")} />
           </div>
           <a
             href={whatsappUrl()}

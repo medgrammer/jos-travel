@@ -52,37 +52,51 @@ export const media = Array.from({ length: 65 }, (_, index) => {
 export const scholarshipFlyers = [
   {
     src: "/media/jos-travel-bourses-chine-offre.jpeg",
-    alt: "Flyer JOS-Travel pour les bourses complètes en Chine",
-    title: "Étudiez en Chine avec bourse complète"
-  },
-  {
-    src: "/media/jos-travel-bourses-chine-conditions.jpeg",
-    alt: "Flyer JOS-Travel des conditions et dossiers à fournir pour les bourses en Chine",
-    title: "Conditions principales et dossiers à fournir"
+    alt: "Flyer JOS-Travel Master Scholarship in China Program 2026",
+    title: "Master Scholarship in China - Program 2026"
   }
 ];
 
 export const scholarshipOffer = {
-  title: "Bourses d'études en Chine",
-  hero: "Étudiez en Chine avec bourse complète",
+  title: "Master Scholarship in China Program 2026",
+  hero: "Master Scholarship in China - Program 2026",
   subtitle:
-    "Opportunités ouvertes aux étudiants avec accompagnement complet de JOS-Travel pour la constitution et le suivi du dossier.",
-  promo: "Offre promotionnelle jusqu'au 10 juin",
-  fee: "Frais d'ouverture du dossier : 100 000 F",
-  deadline: "Dépôt de candidature ouvert jusqu'au 10 juin",
-  support: "Accompagnement complet pour la procédure",
+    "Programme de bourse Master en Chine avec accompagnement JOS-Travel pour vérifier votre profil, préparer le dossier et suivre la procédure.",
+  promo: "Inscriptions ouvertes jusqu'au 20/06/2026",
+  fee: "Stipend : 750 000 F CFA/an",
+  deadline: "Inscription ouverte jusqu'au 20/06/2026",
+  support: "Accompagnement complet pour la candidature et la procédure",
   contacts: ["+237 671 05 72 43", "+237 641 62 07 66"],
   email: "jostravel2026@gmail.com",
   address: "Sis Damas dépôt de bois",
-  levels: ["Diploma / durée 3 ans", "Master", "PhD"],
-  coverage: ["Scolarité", "Hébergement", "Assurance médicale", "Billet d'avion inclus"],
-  conditions: [
-    "Être titulaire du diplôme requis",
-    "Avoir un passeport valide",
-    "Présenter un dossier académique acceptable",
-    "Avoir la motivation pour étudier en Chine"
+  levels: ["Master", "Durée indicative : 3 ans", "Ville : Huai'an", "Langue : anglais selon programme"],
+  coverage: [
+    "Scolarité gratuite",
+    "Dortoir gratuit",
+    "Billet d'avion gratuit",
+    "Assurance médicale",
+    "Stipend 750 000 F CFA/an",
+    "Opportunités pour les meilleurs profils académiques"
   ],
-  documents: ["Diplômes et relevés", "Photos d'identité", "CV", "Passeport"]
+  conditions: [
+    "Être éligible à une admission en Master",
+    "Présenter un dossier académique solide",
+    "Préparer les pièces nécessaires pour l'inscription",
+    "Être motivé(e) pour poursuivre ses études en Chine"
+  ],
+  documents: ["Diplômes et relevés", "Passeport", "CV", "Photos d'identité", "Documents académiques utiles"],
+  programs: [
+    "Electronic Information",
+    "Computer Technology",
+    "International Business",
+    "Energy and Power",
+    "Transportation",
+    "Agriculture",
+    "Mechanical Engineering",
+    "Civil Engineering and Hydraulic Engineering",
+    "Materials and Chemical Engineering",
+    "Social Work"
+  ]
 };
 
 export const navItems = [

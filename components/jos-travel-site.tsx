@@ -227,18 +227,18 @@ const siteCopy = {
     },
     scholarship: {
       eyebrow: "Bourses d'études",
-      title: "Étudiez en Chine avec une bourse complète.",
+      title: "Master Scholarship in China - Programme 2026.",
       copy:
-        "Une rubrique dédiée aux étudiants : JOS-Travel vous accompagne pour vérifier votre profil, constituer le dossier et suivre la procédure jusqu'au dépôt.",
+        "Une opportunité Master en Chine avec scolarité, dortoir, billet d'avion, assurance médicale et stipend annuel. JOS-Travel vous accompagne jusqu'au dépôt du dossier.",
       stats: [
-        { value: "Diploma", label: "Master & PhD" },
-        { value: "100 000 F", label: "Ouverture dossier" },
-        { value: "10 juin", label: "Fin promotion" }
+        { value: "Master", label: "Programme 2026" },
+        { value: "750 000 F", label: "Stipend/an" },
+        { value: "20/06/2026", label: "Clôture" }
       ],
       pageCta: "Voir la rubrique complète",
       whatsappCta: "Discuter sur WhatsApp",
       whatsappMessage:
-        "Bonjour JOS-Travel, je souhaite être accompagné pour le service Bourses d'études en Chine.\n\nJe veux vérifier mon éligibilité, préparer mon dossier et connaître les prochaines étapes."
+        "Bonjour JOS-Travel, je souhaite être accompagné pour le Master Scholarship in China Program 2026.\n\nJe veux vérifier mon éligibilité, préparer mon dossier et connaître les prochaines étapes."
     },
     about: {
       eyebrow: "Qui sommes-nous ?",
@@ -544,18 +544,18 @@ const siteCopy = {
     },
     scholarship: {
       eyebrow: "Study scholarships",
-      title: "Study in China with a full scholarship.",
+      title: "Master Scholarship in China - Program 2026.",
       copy:
-        "A dedicated section for students: JOS-Travel helps you verify your profile, prepare the file and follow the procedure until submission.",
+        "A China Master opportunity covering tuition, dormitory, flight ticket, medical insurance and an annual stipend. JOS-Travel supports your file until submission.",
       stats: [
-        { value: "Diploma", label: "Master & PhD" },
-        { value: "100,000 XAF", label: "File opening" },
-        { value: "June 10", label: "Promotion ends" }
+        { value: "Master", label: "2026 program" },
+        { value: "750,000 XAF", label: "Stipend/year" },
+        { value: "20/06/2026", label: "Deadline" }
       ],
       pageCta: "View full section",
       whatsappCta: "Talk on WhatsApp",
       whatsappMessage:
-        "Hello JOS-Travel, I would like support for the Study Scholarships in China service.\n\nI want to verify my eligibility, prepare my file and understand the next steps."
+        "Hello JOS-Travel, I would like support for the Master Scholarship in China Program 2026.\n\nI want to verify my eligibility, prepare my file and understand the next steps."
     },
     about: {
       eyebrow: "Who are we?",
@@ -1277,26 +1277,22 @@ function Scholarships({ copy }: { copy: SiteCopy }) {
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-90px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="grid gap-5 sm:relative sm:min-h-[610px] sm:block"
+          className="relative"
         >
-          <div className="relative aspect-[0.7] overflow-hidden rounded-[3rem] border border-white bg-white shadow-2xl sm:absolute sm:left-0 sm:top-0 sm:h-[560px] sm:w-[76%]">
+          <figure className="mx-auto max-w-[520px] overflow-hidden rounded-[3rem] border border-white bg-white p-2 shadow-2xl">
+            <div className="relative aspect-[0.714] overflow-hidden rounded-[2.55rem] bg-white">
             <Image
               src={scholarshipFlyers[0].src}
               alt={scholarshipFlyers[0].alt}
               fill
-              sizes="(min-width: 1024px) 430px, 86vw"
-              className="object-contain p-2"
+              sizes="(min-width: 1024px) 520px, 90vw"
+              className="object-cover"
             />
-          </div>
-          <div className="relative aspect-[0.7] overflow-hidden rounded-[2.5rem] border border-white bg-white shadow-2xl shadow-sky-900/15 sm:absolute sm:bottom-0 sm:right-0 sm:h-[430px] sm:w-[54%]">
-            <Image
-              src={scholarshipFlyers[1].src}
-              alt={scholarshipFlyers[1].alt}
-              fill
-              sizes="(min-width: 1024px) 320px, 60vw"
-              className="object-contain p-2"
-            />
-          </div>
+            </div>
+            <figcaption className="px-5 py-4 text-sm font-black uppercase tracking-[0.16em] text-sky-900">
+              {scholarshipFlyers[0].title}
+            </figcaption>
+          </figure>
         </motion.div>
 
         <div>
@@ -1313,7 +1309,7 @@ function Scholarships({ copy }: { copy: SiteCopy }) {
           </div>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            {[...scholarshipOffer.conditions.slice(0, 2), ...scholarshipOffer.documents.slice(0, 2)].map((item) => (
+            {[...scholarshipOffer.coverage.slice(0, 4)].map((item) => (
               <div key={item} className="flex items-center gap-3 rounded-2xl bg-white/78 px-5 py-4 text-sm font-bold text-sky-950 shadow-lg shadow-sky-900/5">
                 <CheckCircle2 aria-hidden="true" className="h-5 w-5 shrink-0 text-cyan-500" />
                 {item}
