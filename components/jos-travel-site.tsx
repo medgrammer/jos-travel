@@ -356,7 +356,6 @@ const siteCopy = {
         "Vacances Yaoundé 2026",
         "Travailleurs saisonniers Royaume-Uni",
         "Visa travail & touristique",
-        "Résidence Dubaï",
         "Événement / groupe"
       ],
       submit: "Envoyer ma demande",
@@ -686,7 +685,6 @@ const siteCopy = {
         "Yaounde Holidays 2026",
         "UK seasonal workers",
         "Work & tourist visa",
-        "Dubai residency",
         "Event / group travel"
       ],
       submit: "Send my request",
