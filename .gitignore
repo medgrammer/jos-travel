@@ -11,3 +11,6 @@ tsconfig.tsbuildinfo
 .env.local
 supabase/.temp
 .vercel
+
+# Local Netlify folder
+.netlify
